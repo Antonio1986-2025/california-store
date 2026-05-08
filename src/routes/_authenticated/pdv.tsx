@@ -140,7 +140,7 @@ function PdvPage() {
           subtotal,
           desconto: descontoEmReais,
           total,
-          user_id: user?.id ?? null,
+          funcionario_id: user?.id ?? null,
         })
         .select("id")
         .single();
@@ -151,8 +151,8 @@ function PdvPage() {
       const itensRows = itens.map((i) => ({
         venda_id,
         variante_id: i.variante_id,
-        qtd: i.qtd,
-        preco_unit: i.preco_unit,
+        quantidade: i.qtd,
+        preco_unitario: i.preco_unit,
         desconto: i.desconto,
         subtotal: i.qtd * i.preco_unit - i.desconto,
       }));
@@ -162,10 +162,9 @@ function PdvPage() {
       // 3) Inserir pagamento
       const pgtoRow: any = {
         venda_id,
-        metodo: pgto.metodo,
+        forma: pgto.metodo,
         valor: pgto.valor,
       };
-      if (pgto.metodo === "dinheiro") pgtoRow.valor_recebido = pgto.valor_recebido;
       if (pgto.metodo === "credito") pgtoRow.parcelas = pgto.parcelas;
       const { error: pagErr } = await supabase.from("pagamentos").insert(pgtoRow);
       if (pagErr) throw pagErr;
