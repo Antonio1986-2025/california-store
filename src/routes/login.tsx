@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Navigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { Shirt, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import logoCalifornia from "@/assets/logo-california.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,9 +47,11 @@ function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-[var(--content-bg)] px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-3">
-          <div className="mx-auto h-12 w-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center">
-            <Shirt className="h-6 w-6" />
-          </div>
+          <img
+            src={logoCalifornia}
+            alt="California Stores"
+            className="mx-auto h-16 w-16 rounded-xl object-cover"
+          />
           <div>
             <CardTitle className="text-2xl">California Stores</CardTitle>
             <CardDescription>ERP de gestão da loja</CardDescription>
