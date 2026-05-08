@@ -20,6 +20,7 @@ import { Plus, Pencil, History } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { createFuncionarioAuth } from "@/lib/funcionarios.functions";
 
 export const Route = createFileRoute("/_authenticated/funcionarios")({
   component: FuncionariosPage,
@@ -181,13 +182,13 @@ function FuncSheet({ open, onClose, editing, onSaved }: {
       } else {
         let user_id: string | null = null;
         if (form.email && form.password) {
-          const { data, error } = await supabase.auth.signUp({
-            email: form.email, password: form.password,
-          });
-          if (error) {
-            toast.error("Falha ao criar login: " + error.message);
-          } else {
-            user_id = data.user?.id ?? null;
+          try {
+            const res = await createFuncionarioAuth({
+              data: { email: form.email, password: form.password },
+            });
+            user_id = res.user_id;
+          } catch (e: any) {
+            toast.error("Falha ao criar login: " + (e.message ?? e));
           }
         }
         const { error } = await supabase.from("funcionarios").insert({ ...payload, user_id });
