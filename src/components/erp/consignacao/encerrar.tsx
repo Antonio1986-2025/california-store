@@ -135,96 +135,34 @@ export function EncerrarConsignacao({
 
   async function encerrar() {
     if (!selectedId) return;
-    if (forma === "credito_cliente") {
-      if (!clienteSaldo) return toast.error("Sem cliente associado para crédito.");
-      if (clienteSaldo.saldo < totalCobrar) return toast.error("Saldo de crédito insuficiente.");
-    }
+
+    const itensPayload = totaisPorItem.map((i) => ({
+      item_id: i.id,
+      qtd_devolvida_agora: i.devolverAgora,
+      qtd_vendida: i.vendida,
+    }));
+
     setBusy(true);
     try {
-      // 1) Atualizar qtd_devolvida em cada item
-      for (const i of totaisPorItem) {
-        const novaDev = i.qtd_devolvida + i.devolverAgora;
-        await supabase
-          .from("consignacao_itens")
-          .update({ qtd_devolvida: novaDev })
-          .eq("id", i.id);
-      }
-
-      // 2) Movimentações de devolução + reposição de estoque
-      const movRows = totaisPorItem
-        .filter((i) => i.devolverAgora > 0)
-        .map((i) => ({
-          variante_id: i.variante_id,
-          tipo: "devolucao_consig",
-          quantidade: i.devolverAgora,
+      const { data, error } = await supabase.rpc("encerrar_consignacao", {
+        payload: {
           consignacao_id: selectedId,
-        }));
-      if (movRows.length) await supabase.from("movimentacoes_estoque").insert(movRows);
-
-      // Repor estoque (lê estoque atual e soma)
-      for (const i of totaisPorItem.filter((x) => x.devolverAgora > 0)) {
-        const { data: v } = await supabase
-          .from("produto_variantes")
-          .select("qtd_estoque")
-          .eq("id", i.variante_id)
-          .single();
-        const atual = Number(v?.qtd_estoque) || 0;
-        await supabase
-          .from("produto_variantes")
-          .update({ qtd_estoque: atual + i.devolverAgora })
-          .eq("id", i.variante_id);
-      }
-
-      // 3) Criar venda automática para vendidas
-      if (totalCobrar > 0) {
-        const vendidas = totaisPorItem.filter((i) => i.vendida > 0);
-        const subtotal = vendidas.reduce((a, i) => a + i.valor, 0);
-        const insertVenda: any = {
-          cliente_id: clienteSaldo?.id ?? null,
-          subtotal,
-          desconto: 0,
-          total: totalCobrar,
           funcionario_id: user?.id ?? null,
-          origem: "consignacao",
-        };
-        const { data: venda, error: vErr } = await supabase
-          .from("vendas")
-          .insert(insertVenda)
-          .select("id")
-          .single();
-        if (vErr || !venda) throw vErr ?? new Error("Falha ao criar venda da consignação");
+          forma,
+          parcelas: forma === "credito" ? parcelas : 1,
+          itens: itensPayload,
+        },
+      });
 
-        const itensVenda = vendidas.map((i) => ({
-          venda_id: venda.id,
-          variante_id: i.variante_id,
-          quantidade: i.vendida,
-          preco_unitario: i.preco_unitario,
-          desconto: 0,
-          subtotal: i.valor,
-        }));
-        await supabase.from("venda_itens").insert(itensVenda);
-
-        const pgto: any = { venda_id: venda.id, forma, valor: totalCobrar };
-        if (forma === "credito") pgto.parcelas = parcelas;
-        await supabase.from("pagamentos").insert(pgto);
-
-        if (forma === "credito_cliente" && clienteSaldo) {
-          await supabase
-            .from("clientes")
-            .update({ saldo_credito: clienteSaldo.saldo - totalCobrar })
-            .eq("id", clienteSaldo.id);
-        }
+      if (error || !(data as any)?.ok) {
+        toast.error((data as any)?.erro ?? error?.message ?? "Erro ao encerrar consignação.");
+        return;
       }
-
-      // 4) Atualizar status da consignação para encerrada
-      await supabase.from("consignacoes").update({ status: "encerrada" }).eq("id", selectedId);
 
       toast.success("Consignação encerrada!");
       setSelectedId(null);
       setItens([]);
       onEncerrada();
-    } catch (e: any) {
-      toast.error(e.message ?? "Erro ao encerrar consignação.");
     } finally {
       setBusy(false);
     }
