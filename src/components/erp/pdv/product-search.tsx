@@ -117,7 +117,7 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
           Nenhum produto encontrado.
         </p>
       ) : (
-        <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
           {results.map((p) => {
             const sem = p.qtd_estoque <= 0;
             return (
