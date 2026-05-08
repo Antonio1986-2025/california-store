@@ -1,9 +1,9 @@
-import { LogOut } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import { useRouterState, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
-import { navTitles } from "./sidebar-nav";
+import { navTitles, useSidebarMobile } from "./sidebar-nav";
 
 function initialsFromEmail(email?: string | null) {
   if (!email) return "?";
@@ -17,6 +17,7 @@ export function Topbar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { toggle } = useSidebarMobile();
 
   const matched = Object.keys(navTitles)
     .sort((a, b) => b.length - a.length)
@@ -25,7 +26,12 @@ export function Topbar() {
 
   return (
     <header className="h-16 bg-background border-b px-6 flex items-center justify-between sticky top-0 z-10">
-      <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon" className="lg:hidden" onClick={toggle} aria-label="Menu">
+          <Menu className="h-5 w-5" />
+        </Button>
+        <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+      </div>
       <div className="flex items-center gap-3">
         <div className="text-right hidden sm:block">
           <p className="text-sm font-medium leading-tight">{user?.email ?? "Usuário"}</p>
