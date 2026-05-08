@@ -25,19 +25,19 @@ export function Topbar() {
   const title = matched ? navTitles[matched] : "California Stores";
 
   return (
-    <header className="h-16 bg-background border-b px-6 flex items-center justify-between sticky top-0 z-10">
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="lg:hidden" onClick={toggle} aria-label="Menu">
+    <header className="h-14 sm:h-16 bg-background border-b px-2 sm:px-4 md:px-6 flex items-center justify-between sticky top-0 z-10">
+      <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+        <Button variant="ghost" size="icon" className="lg:hidden shrink-0" onClick={toggle} aria-label="Menu">
           <Menu className="h-5 w-5" />
         </Button>
-        <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+        <h1 className="text-base sm:text-lg font-semibold text-foreground truncate">{title}</h1>
       </div>
-      <div className="flex items-center gap-3">
-        <div className="text-right hidden sm:block">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="text-right hidden md:block">
           <p className="text-sm font-medium leading-tight">{user?.email ?? "Usuário"}</p>
           <p className="text-xs text-muted-foreground leading-tight">Operador</p>
         </div>
-        <Avatar className="h-9 w-9">
+        <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
           <AvatarFallback className="bg-primary text-primary-foreground text-xs">
             {initialsFromEmail(user?.email)}
           </AvatarFallback>
@@ -50,8 +50,8 @@ export function Topbar() {
             navigate({ to: "/login" });
           }}
         >
-          <LogOut className="h-4 w-4 mr-1" />
-          Sair
+          <LogOut className="h-4 w-4 sm:mr-1" />
+          <span className="hidden sm:inline">Sair</span>
         </Button>
       </div>
     </header>
