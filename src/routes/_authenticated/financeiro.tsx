@@ -46,13 +46,15 @@ function Caixa() {
   const [desc, setDesc] = useState("");
 
   const load = async () => {
-    const { data: c } = await supabase.from("caixa").select("*").is("fechado_em", null)
-      .order("aberto_em", { ascending: false }).limit(1).maybeSingle();
+    const { data: c } = await supabase.from("caixa_sessoes").select("*")
+      .eq("status", "aberta")
+      .order("abertura_em", { ascending: false }).limit(1).maybeSingle();
     setCaixa(c);
     if (c) {
-      const { data: m } = await supabase.from("movimentacoes_caixa").select("*").eq("caixa_id", c.id).order("created_at", { ascending: false });
+      const { data: m } = await supabase.from("caixa_movimentos").select("*")
+        .eq("sessao_id", c.id).order("criado_em", { ascending: false });
       setMovs(m ?? []);
-      const ini = c.aberto_em;
+      const ini = c.abertura_em;
       const { data: pg } = await supabase.from("pagamentos").select("forma, valor, vendas!inner(created_at)").gte("vendas.created_at", ini);
       setPagamentos(pg ?? []);
     } else {
@@ -73,21 +75,38 @@ function Caixa() {
   const saldoFinal = Number(caixa?.saldo_inicial ?? 0) + totalDinheiro + totalSupr - totalSangria;
 
   const abrir = async () => {
-    const { error } = await supabase.from("caixa").insert({ saldo_inicial: valor, funcionario_id: user?.id ?? null, aberto_em: new Date().toISOString() });
+    const { data: ses, error } = await supabase.from("caixa_sessoes").insert({
+      saldo_inicial: valor, funcionario_id: user?.id ?? null,
+      abertura_em: new Date().toISOString(), status: "aberta",
+    }).select("id").single();
     if (error) return toast.error(error.message);
+    if (ses) {
+      await supabase.from("caixa_movimentos").insert({
+        sessao_id: ses.id, tipo: "abertura", valor,
+        descricao: "Abertura de caixa", funcionario_id: user?.id ?? null,
+      });
+    }
     toast.success("Caixa aberto"); setOpenAbrir(false); setValor(0); load();
   };
 
   const fechar = async () => {
     if (!caixa) return;
-    const { error } = await supabase.from("caixa").update({ fechado_em: new Date().toISOString(), saldo_final: saldoFinal }).eq("id", caixa.id);
+    const { error } = await supabase.from("caixa_sessoes").update({
+      fechamento_em: new Date().toISOString(), saldo_final: saldoFinal, status: "fechada",
+    }).eq("id", caixa.id);
     if (error) return toast.error(error.message);
+    await supabase.from("caixa_movimentos").insert({
+      sessao_id: caixa.id, tipo: "fechamento", valor: saldoFinal,
+      descricao: "Fechamento de caixa", funcionario_id: user?.id ?? null,
+    });
     toast.success(`Caixa fechado. Saldo: ${brl(saldoFinal)}`); load();
   };
 
   const lancar = async () => {
     if (!caixa || !openMov || valor <= 0) return;
-    const { error } = await supabase.from("movimentacoes_caixa").insert({ caixa_id: caixa.id, tipo: openMov, valor, descricao: desc, funcionario_id: user?.id ?? null });
+    const { error } = await supabase.from("caixa_movimentos").insert({
+      sessao_id: caixa.id, tipo: openMov, valor, descricao: desc, funcionario_id: user?.id ?? null,
+    });
     if (error) return toast.error(error.message);
     toast.success("Lançado"); setOpenMov(null); setValor(0); setDesc(""); load();
   };
@@ -104,7 +123,7 @@ function Caixa() {
         <CardContent>
           {caixa ? (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <Info l="Aberto em" v={new Date(caixa.aberto_em).toLocaleString("pt-BR")} />
+              <Info l="Aberto em" v={new Date(caixa.abertura_em).toLocaleString("pt-BR")} />
               <Info l="Saldo inicial" v={brl(Number(caixa.saldo_inicial ?? 0))} />
               <Info l="Saldo final esperado" v={brl(saldoFinal)} />
               <Info l="Funcionário" v={caixa.funcionario_id ?? "—"} />
@@ -142,7 +161,7 @@ function Caixa() {
                 <TableBody>
                   {movs.map((m) => (
                     <TableRow key={m.id}>
-                      <TableCell>{new Date(m.created_at).toLocaleTimeString("pt-BR")}</TableCell>
+                      <TableCell>{new Date(m.criado_em).toLocaleTimeString("pt-BR")}</TableCell>
                       <TableCell><Badge variant="outline">{m.tipo}</Badge></TableCell>
                       <TableCell className={m.tipo === "sangria" ? "text-destructive" : "text-green-600"}>{brl(Number(m.valor ?? 0))}</TableCell>
                       <TableCell>{m.descricao ?? "—"}</TableCell>
