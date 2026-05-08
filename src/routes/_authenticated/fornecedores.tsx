@@ -20,9 +20,9 @@ export const Route = createFileRoute("/_authenticated/fornecedores")({
 });
 
 type Fornecedor = {
-  id: string; nome: string; cnpj: string | null; contato: string | null;
-  telefone: string | null; email: string | null; prazo_pagamento: number | null;
-  endereco: string | null; observacoes: string | null;
+  id: string; nome: string; cnpj: string | null; contato_nome: string | null;
+  contato_telefone: string | null; email: string | null; prazo_pagamento: number | null;
+  endereco: string | null; observacoes: string | null; ativo: boolean | null;
 };
 
 function Page() {
@@ -60,7 +60,7 @@ function Page() {
                 <TableRow key={r.id}>
                   <TableCell className="font-medium">{r.nome}</TableCell>
                   <TableCell>{r.cnpj ?? "—"}</TableCell>
-                  <TableCell>{r.contato ?? r.telefone ?? "—"}</TableCell>
+                  <TableCell>{r.contato_nome ? `${r.contato_nome}${r.contato_telefone ? ` · ${r.contato_telefone}` : ""}` : (r.contato_telefone ?? "—")}</TableCell>
                   <TableCell>{r.prazo_pagamento ?? "—"}</TableCell>
                   <TableCell>{pedidosCount[r.id] ?? 0}</TableCell>
                   <TableCell className="text-right space-x-1">
@@ -107,8 +107,8 @@ function FornecedorForm({ open, onOpenChange, id, onSaved }: { open: boolean; on
           <div className="grid gap-2"><Label>Nome *</Label><Input value={f.nome ?? ""} onChange={(e) => set("nome", e.target.value)} /></div>
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2"><Label>CNPJ</Label><Input value={f.cnpj ?? ""} onChange={(e) => set("cnpj", e.target.value)} /></div>
-            <div className="grid gap-2"><Label>Contato</Label><Input value={f.contato ?? ""} onChange={(e) => set("contato", e.target.value)} /></div>
-            <div className="grid gap-2"><Label>Telefone</Label><Input value={f.telefone ?? ""} onChange={(e) => set("telefone", e.target.value)} /></div>
+            <div className="grid gap-2"><Label>Contato (nome)</Label><Input value={f.contato_nome ?? ""} onChange={(e) => set("contato_nome", e.target.value)} /></div>
+            <div className="grid gap-2"><Label>Telefone</Label><Input value={f.contato_telefone ?? ""} onChange={(e) => set("contato_telefone", e.target.value)} /></div>
             <div className="grid gap-2"><Label>Email</Label><Input value={f.email ?? ""} onChange={(e) => set("email", e.target.value)} /></div>
             <div className="grid gap-2"><Label>Prazo pagamento (dias)</Label><Input type="number" value={f.prazo_pagamento ?? ""} onChange={(e) => set("prazo_pagamento", Number(e.target.value))} /></div>
           </div>
@@ -160,7 +160,7 @@ function PedidosDialog({ fornecedor, onClose }: { fornecedor: Fornecedor | null;
   const salvarPedido = async () => {
     if (!fornecedor || itens.length === 0) return toast.error("Adicione itens");
     const { data: ped, error } = await supabase.from("pedidos_compra").insert({
-      fornecedor_id: fornecedor.id, status: "pendente", previsao_entrega: previsao || null, total,
+      fornecedor_id: fornecedor.id, status: "pendente", previsao: previsao || null, total,
     }).select("id").single();
     if (error || !ped) return toast.error(error?.message ?? "Erro");
     const its = itens.map((i) => ({ pedido_id: ped.id, variante_id: i.variante_id, quantidade: i.quantidade, preco_unitario: i.preco_unitario }));
@@ -170,17 +170,19 @@ function PedidosDialog({ fornecedor, onClose }: { fornecedor: Fornecedor | null;
 
   const receber = async (pedido: any) => {
     if (!fornecedor) return;
-    const { data: its } = await supabase.from("pedido_compra_itens").select("variante_id, quantidade").eq("pedido_id", pedido.id);
+    const { data: its } = await supabase.from("pedido_compra_itens").select("id, variante_id, quantidade").eq("pedido_id", pedido.id);
     for (const it of its ?? []) {
       const { data: v } = await supabase.from("produto_variantes").select("qtd_estoque").eq("id", it.variante_id).single();
       const atual = Number(v?.qtd_estoque ?? 0);
       await supabase.from("produto_variantes").update({ qtd_estoque: atual + Number(it.quantidade) }).eq("id", it.variante_id);
       await supabase.from("movimentacoes_estoque").insert({ variante_id: it.variante_id, tipo: "entrada", quantidade: it.quantidade, motivo: `Pedido ${pedido.id.slice(0, 8)}` });
+      await supabase.from("pedido_compra_itens").update({ qtd_recebida: it.quantidade }).eq("id", it.id);
     }
     const venc = new Date(); venc.setDate(venc.getDate() + (fornecedor.prazo_pagamento ?? 30));
     await supabase.from("contas").insert({
       tipo: "pagar", descricao: `Pedido fornecedor ${fornecedor.nome}`, valor: pedido.total,
-      vencimento: venc.toISOString().slice(0, 10), status: "aberta", fornecedor_id: fornecedor.id,
+      vencimento: venc.toISOString().slice(0, 10), status: "pendente",
+      fornecedor_id: fornecedor.id, pedido_id: pedido.id,
     });
     await supabase.from("pedidos_compra").update({ status: "recebido", recebido_em: new Date().toISOString() }).eq("id", pedido.id);
     toast.success("Pedido recebido, estoque atualizado e conta gerada"); loadPedidos();
@@ -199,7 +201,7 @@ function PedidosDialog({ fornecedor, onClose }: { fornecedor: Fornecedor | null;
                 <TableCell>{new Date(p.created_at).toLocaleDateString("pt-BR")}</TableCell>
                 <TableCell>{(p.pedido_compra_itens ?? []).reduce((s: number, i: any) => s + Number(i.quantidade), 0)}</TableCell>
                 <TableCell>{brl(Number(p.total ?? 0))}</TableCell>
-                <TableCell>{p.previsao_entrega ? new Date(p.previsao_entrega).toLocaleDateString("pt-BR") : "—"}</TableCell>
+                <TableCell>{p.previsao ? new Date(p.previsao).toLocaleDateString("pt-BR") : "—"}</TableCell>
                 <TableCell><Badge variant={p.status === "recebido" ? "default" : "outline"}>{p.status}</Badge></TableCell>
                 <TableCell>{p.status !== "recebido" && (
                   <Button size="sm" variant="outline" onClick={() => receber(p)}><PackageCheck className="h-4 w-4 mr-1" />Receber</Button>

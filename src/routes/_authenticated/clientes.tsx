@@ -192,6 +192,23 @@ function ClientePerfil({ clienteId, onClose, onChanged }: { clienteId: string | 
     const novo = Number(c.saldo_credito ?? 0) + credValor;
     const { error } = await supabase.from("clientes").update({ saldo_credito: novo }).eq("id", c.id);
     if (error) return toast.error(error.message);
+    // Registra em caixa_movimentos (sessão de caixa atualmente aberta, se houver)
+    const { data: sessao } = await supabase
+      .from("caixa_sessoes")
+      .select("id, funcionario_id")
+      .eq("status", "aberta")
+      .order("abertura_em", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (sessao) {
+      await supabase.from("caixa_movimentos").insert({
+        sessao_id: sessao.id,
+        tipo: "recebimento",
+        valor: credValor,
+        descricao: credDesc || `Crédito/vale-troca para ${c.nome}`,
+        funcionario_id: sessao.funcionario_id ?? null,
+      });
+    }
     toast.success("Crédito atualizado");
     setC({ ...c, saldo_credito: novo });
     setCredOpen(false); setCredValor(0); setCredDesc("");
