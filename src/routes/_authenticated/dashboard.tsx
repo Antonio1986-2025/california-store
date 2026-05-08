@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   TrendingUp, TrendingDown, DollarSign, Boxes, Handshake, Calendar,
+  AlertTriangle, AlertCircle, Cake,
 } from "lucide-react";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -76,6 +78,30 @@ function DashboardPage() {
   const [m, setM] = useState<Metrics>({
     vendasHoje: 0, vendasMes: 0, estoque: 0, consignacoes: 0, varHoje: null, varMes: null,
   });
+  const [alerts, setAlerts] = useState({ vencidas: 0, semEstoque: 0, aniversariantes: 0 });
+
+  useEffect(() => {
+    (async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const month = new Date().getMonth() + 1;
+      const [vencidas, semEstoque, clientes] = await Promise.all([
+        supabase.from("consignacoes").select("id", { count: "exact", head: true })
+          .eq("status", "aberta").lt("data_prazo", today),
+        supabase.from("produto_variantes").select("id", { count: "exact", head: true })
+          .eq("qtd_estoque", 0),
+        supabase.from("clientes").select("data_nascimento"),
+      ]);
+      const aniv = (clientes.data ?? []).filter((c: any) => {
+        if (!c.data_nascimento) return false;
+        return new Date(c.data_nascimento).getMonth() + 1 === month;
+      }).length;
+      setAlerts({
+        vencidas: vencidas.count ?? 0,
+        semEstoque: semEstoque.count ?? 0,
+        aniversariantes: aniv,
+      });
+    })();
+  }, []);
 
   useEffect(() => {
     const now = new Date();
@@ -129,6 +155,34 @@ function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {(alerts.vencidas > 0 || alerts.semEstoque > 0 || alerts.aniversariantes > 0) && (
+        <div className="space-y-2">
+          {alerts.vencidas > 0 && (
+            <Link to="/consignacao" className="flex items-center justify-between rounded-md border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-900 hover:bg-yellow-100">
+              <span className="flex items-center gap-2"><AlertTriangle className="h-4 w-4" />
+                {alerts.vencidas} consignação(ões) vencida(s) sem encerramento.
+              </span>
+              <span className="text-xs underline">Ver consignações</span>
+            </Link>
+          )}
+          {alerts.semEstoque > 0 && (
+            <Link to="/estoque" className="flex items-center justify-between rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-900 hover:bg-red-100">
+              <span className="flex items-center gap-2"><AlertCircle className="h-4 w-4" />
+                {alerts.semEstoque} variante(s) com estoque zerado.
+              </span>
+              <span className="text-xs underline">Ver estoque</span>
+            </Link>
+          )}
+          {alerts.aniversariantes > 0 && (
+            <Link to="/clientes" className="flex items-center justify-between rounded-md border border-blue-300 bg-blue-50 px-4 py-3 text-sm text-blue-900 hover:bg-blue-100">
+              <span className="flex items-center gap-2"><Cake className="h-4 w-4" />
+                {alerts.aniversariantes} cliente(s) fazem aniversário neste mês.
+              </span>
+              <span className="text-xs underline">Ver clientes</span>
+            </Link>
+          )}
+        </div>
+      )}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => {
           const Icon = c.icon;
