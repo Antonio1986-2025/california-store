@@ -12,8 +12,8 @@ import {
   BarChart3,
   UserCog,
   Settings,
-  Shirt,
 } from "lucide-react";
+import logoCalifornia from "@/assets/logo-california.png";
 
 const items = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -64,9 +64,11 @@ export function SidebarNav() {
         }
       >
       <div className="h-16 px-5 flex items-center gap-2 border-b">
-        <div className="h-9 w-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
-          <Shirt className="h-5 w-5" />
-        </div>
+        <img
+          src={logoCalifornia}
+          alt="California Stores"
+          className="h-10 w-10 rounded-lg object-cover"
+        />
         <div className="leading-tight">
           <p className="text-sm font-semibold text-foreground">California</p>
           <p className="text-xs text-muted-foreground">Stores</p>
