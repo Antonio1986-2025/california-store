@@ -1,7 +1,7 @@
 {
-  "name": "California Stores ERP",
+  "name": "California Store ERP",
   "short_name": "California",
-  "description": "Sistema de gestão California Stores",
+  "description": "Sistema de gestão California Store",
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",

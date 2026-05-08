@@ -22,7 +22,7 @@ export function Topbar() {
   const matched = Object.keys(navTitles)
     .sort((a, b) => b.length - a.length)
     .find((p) => pathname === p || pathname.startsWith(p + "/"));
-  const title = matched ? navTitles[matched] : "California Stores";
+  const title = matched ? navTitles[matched] : "California Store";
 
   return (
     <header className="h-14 sm:h-16 bg-background border-b px-2 sm:px-4 md:px-6 flex items-center justify-between sticky top-0 z-10">

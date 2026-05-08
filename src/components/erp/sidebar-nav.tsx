@@ -66,12 +66,12 @@ export function SidebarNav() {
       <div className="h-16 px-5 flex items-center gap-2 border-b">
         <img
           src={logoCalifornia}
-          alt="California Stores"
+          alt="California Store"
           className="h-10 w-10 rounded-lg object-cover"
         />
         <div className="leading-tight">
           <p className="text-sm font-semibold text-foreground">California</p>
-          <p className="text-xs text-muted-foreground">Stores</p>
+          <p className="text-xs text-muted-foreground">Store</p>
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">

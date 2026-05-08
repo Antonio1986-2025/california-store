@@ -49,11 +49,11 @@ function LoginPage() {
         <CardHeader className="text-center space-y-3">
           <img
             src={logoCalifornia}
-            alt="California Stores"
+            alt="California Store"
             className="mx-auto h-16 w-16 rounded-xl object-cover"
           />
           <div>
-            <CardTitle className="text-2xl">California Stores</CardTitle>
+            <CardTitle className="text-2xl">California Store</CardTitle>
             <CardDescription>ERP de gestão da loja</CardDescription>
           </div>
         </CardHeader>
