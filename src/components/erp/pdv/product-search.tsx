@@ -26,7 +26,7 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
         const { data, error } = await supabase
           .from("produto_variantes")
           .select(
-            "id, sku, cor, tamanho, preco, qtd_estoque, foto_url, produto_id, produtos:produto_id(id, nome, codigo_barras)"
+            "id, sku, cor, tamanho, preco_venda, qtd_estoque, foto_url, produto_id, produtos:produto_id(id, nome, codigo_barras)"
           )
           .or(`sku.ilike.%${term}%`)
           .limit(40);
@@ -48,7 +48,7 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
             const { data: byName } = await supabase
               .from("produtos")
               .select(
-                "id, nome, codigo_barras, produto_variantes(id, sku, cor, tamanho, preco, qtd_estoque, foto_url, produto_id)"
+                "id, nome, codigo_barras, produto_variantes(id, sku, cor, tamanho, preco_venda, qtd_estoque, foto_url, produto_id)"
               )
               .or(`nome.ilike.%${term}%,codigo_barras.ilike.%${term}%`)
               .limit(20);
@@ -70,7 +70,7 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
               sku: r.sku ?? null,
               cor: r.cor ?? null,
               tamanho: r.tamanho ?? null,
-              preco: Number(r.preco) || 0,
+              preco: Number(r.preco_venda) || 0,
               qtd_estoque: Number(r.qtd_estoque) || 0,
               foto_url: r.foto_url ?? null,
               codigo_barras: r.produtos?.codigo_barras ?? null,
