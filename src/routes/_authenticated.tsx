@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Navigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { SidebarNav } from "@/components/erp/sidebar-nav";
+import { SidebarNav, SidebarProvider } from "@/components/erp/sidebar-nav";
 import { Topbar } from "@/components/erp/topbar";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -21,14 +21,16 @@ function AuthenticatedLayout() {
   if (!session) return <Navigate to="/login" />;
 
   return (
-    <div className="min-h-screen flex bg-[var(--content-bg)]">
-      <SidebarNav />
-      <div className="flex-1 flex flex-col min-w-0">
-        <Topbar />
-        <main className="flex-1 p-6">
-          <Outlet />
-        </main>
+    <SidebarProvider>
+      <div className="min-h-screen flex bg-[var(--content-bg)]">
+        <SidebarNav />
+        <div className="flex-1 flex flex-col min-w-0">
+          <Topbar />
+          <main className="flex-1 p-6">
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }
