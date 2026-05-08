@@ -221,7 +221,7 @@ function ClientePerfil({ clienteId, onClose, onChanged }: { clienteId: string | 
         <DialogHeader><DialogTitle>{c?.nome ?? "Cliente"}</DialogTitle></DialogHeader>
         {c && (
           <div className="space-y-4">
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Total gasto</p><p className="text-xl font-bold">{brl(totalGasto)}</p></CardContent></Card>
               <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Compras</p><p className="text-xl font-bold">{vendas.length}</p></CardContent></Card>
               <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Última compra</p><p className="text-sm font-medium">{ultima ? new Date(ultima.created_at).toLocaleDateString("pt-BR") : "—"}</p></CardContent></Card>

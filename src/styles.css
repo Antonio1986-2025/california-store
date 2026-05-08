@@ -156,3 +156,20 @@
     background: white; color: black;
   }
 }
+
+/* Mobile polish: horizontal scroll for tab strips and overflowing flex rows */
+@media (max-width: 768px) {
+  [role="tablist"] {
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    width: 100%;
+    max-width: 100%;
+  }
+  [role="tablist"]::-webkit-scrollbar { display: none; }
+  [role="tablist"] [role="tab"] { flex-shrink: 0; }
+
+  /* Tables already wrap in overflow-auto from shadcn — keep min-width so columns don't squish */
+  table { min-width: max-content; }
+}

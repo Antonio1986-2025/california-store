@@ -214,16 +214,16 @@ function PdvPage() {
   }
 
   return (
-    <div className="grid gap-4 grid-cols-1 lg:grid-cols-[3fr_2fr] h-[calc(100vh-7rem)]">
+    <div className="grid gap-4 grid-cols-1 lg:grid-cols-[3fr_2fr] lg:h-[calc(100vh-7rem)]">
       {/* Coluna esquerda */}
-      <Card className="flex flex-col overflow-hidden">
+      <Card className="flex flex-col overflow-hidden lg:max-h-full">
         <CardContent className="pt-6 flex-1 overflow-y-auto">
           <ProductSearch onAdd={addItem} />
         </CardContent>
       </Card>
 
       {/* Coluna direita - Carrinho */}
-      <Card className="flex flex-col overflow-hidden">
+      <Card className="flex flex-col overflow-hidden lg:max-h-full">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <ShoppingCart className="h-4 w-4" /> Carrinho ({itens.length})
