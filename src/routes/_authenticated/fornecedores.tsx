@@ -20,9 +20,9 @@ export const Route = createFileRoute("/_authenticated/fornecedores")({
 });
 
 type Fornecedor = {
-  id: string; nome: string; cnpj: string | null; contato: string | null;
-  telefone: string | null; email: string | null; prazo_pagamento: number | null;
-  endereco: string | null; observacoes: string | null;
+  id: string; nome: string; cnpj: string | null; contato_nome: string | null;
+  contato_telefone: string | null; email: string | null; prazo_pagamento: number | null;
+  endereco: string | null; observacoes: string | null; ativo: boolean | null;
 };
 
 function Page() {
@@ -60,7 +60,7 @@ function Page() {
                 <TableRow key={r.id}>
                   <TableCell className="font-medium">{r.nome}</TableCell>
                   <TableCell>{r.cnpj ?? "—"}</TableCell>
-                  <TableCell>{r.contato ?? r.telefone ?? "—"}</TableCell>
+                  <TableCell>{r.contato_nome ? `${r.contato_nome}${r.contato_telefone ? ` · ${r.contato_telefone}` : ""}` : (r.contato_telefone ?? "—")}</TableCell>
                   <TableCell>{r.prazo_pagamento ?? "—"}</TableCell>
                   <TableCell>{pedidosCount[r.id] ?? 0}</TableCell>
                   <TableCell className="text-right space-x-1">
