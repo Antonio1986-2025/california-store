@@ -236,7 +236,7 @@ function Contas() {
 
   const salvarNova = async () => {
     if (!nova.descricao || !nova.vencimento) return toast.error("Preencha descrição e vencimento");
-    const { error } = await supabase.from("contas").insert({ ...nova, tipo, status: "aberta" });
+    const { error } = await supabase.from("contas").insert({ ...nova, tipo, status: "pendente" });
     if (error) return toast.error(error.message);
     toast.success("Conta criada"); setNovaOpen(false); setNova({ descricao: "", valor: 0, vencimento: "" }); load();
   };
