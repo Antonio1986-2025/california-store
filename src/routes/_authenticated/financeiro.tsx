@@ -243,9 +243,10 @@ function Contas() {
 
   const statusBadge = (r: any) => {
     if (r.status === "pago") return <Badge>Pago</Badge>;
+    if (r.status === "cancelado") return <Badge variant="secondary">Cancelado</Badge>;
     const v = new Date(r.vencimento); const t = new Date(); t.setHours(0,0,0,0);
-    if (v < t) return <Badge variant="destructive">Vencida</Badge>;
-    return <Badge variant="outline">Aberta</Badge>;
+    if (v < t || r.status === "vencido") return <Badge variant="destructive">Vencido</Badge>;
+    return <Badge variant="outline">Pendente</Badge>;
   };
 
   return (
