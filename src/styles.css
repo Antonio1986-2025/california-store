@@ -146,3 +146,13 @@
     color: var(--color-foreground);
   }
 }
+
+/* Print: only render the receipt */
+@media print {
+  body * { visibility: hidden !important; }
+  #receipt-print, #receipt-print * { visibility: visible !important; }
+  #receipt-print {
+    position: fixed; inset: 0; padding: 12mm;
+    background: white; color: black;
+  }
+}
