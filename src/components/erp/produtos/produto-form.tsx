@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { gerarCodigoVariante } from "@/lib/sku-format";
 
 type Variante = {
   id?: string;
@@ -39,6 +40,7 @@ export function ProdutoForm({ open, onOpenChange, produtoId, onSaved }: Props) {
   const [precoVenda, setPrecoVenda] = useState<number>(0);
   const [estoqueMinimo, setEstoqueMinimo] = useState<number>(0);
   const [foto, setFoto] = useState<string>("");
+  const [codigoFornecedor, setCodigoFornecedor] = useState<string>("");
   const [variantes, setVariantes] = useState<Variante[]>([
     { cor: "", tamanho: "", codigo_barras: "", qtd_estoque: 0, preco_venda: null },
   ]);
@@ -86,6 +88,7 @@ export function ProdutoForm({ open, onOpenChange, produtoId, onSaved }: Props) {
       } else {
         setNome(""); setCategoriaId(""); setMarca(""); setColecao(""); setFornecedorId("");
         setDescricao(""); setPrecoCusto(0); setPrecoVenda(0); setEstoqueMinimo(0); setFoto("");
+        setCodigoFornecedor("");
         setVariantes([{ cor: "", tamanho: "", codigo_barras: "", qtd_estoque: 0, preco_venda: null }]);
       }
     })();
