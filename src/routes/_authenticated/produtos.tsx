@@ -47,6 +47,20 @@ function Page() {
   const norm = (s: string) =>
     (s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
+  const driveImg = (url?: string | null, size = 200): string | null => {
+    if (!url) return null;
+    // https://lh3.googleusercontent.com/d/{id}
+    const m1 = url.match(/lh3\.googleusercontent\.com\/d\/([A-Za-z0-9_-]+)/);
+    if (m1) return `https://drive.google.com/thumbnail?id=${m1[1]}&sz=w${size}`;
+    // https://drive.google.com/file/d/{id}/view
+    const m2 = url.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/);
+    if (m2) return `https://drive.google.com/thumbnail?id=${m2[1]}&sz=w${size}`;
+    // https://drive.google.com/open?id={id}
+    const m3 = url.match(/drive\.google\.com\/open\?id=([A-Za-z0-9_-]+)/);
+    if (m3) return `https://drive.google.com/thumbnail?id=${m3[1]}&sz=w${size}`;
+    return url;
+  };
+
   const filtered = useMemo(() => {
     const t = norm(busca);
     return rows.filter((r) => {
@@ -118,9 +132,9 @@ function Page() {
                 return (
                   <TableRow key={r.id}>
                     <TableCell>
-                      {r.foto_url
-                        ? <img src={r.foto_url} alt="" className="h-10 w-10 object-cover rounded" />
-                        : <div className="h-10 w-10 bg-muted rounded" />}
+                       {r.foto_url && driveImg(r.foto_url)
+                         ? <img src={driveImg(r.foto_url, 100)!} alt="" referrerPolicy="no-referrer" className="h-10 w-10 object-cover rounded" onError={(e)=>{(e.currentTarget as HTMLImageElement).style.visibility='hidden';}} />
+                         : <div className="h-10 w-10 bg-muted rounded" />}
                     </TableCell>
                     <TableCell className="font-medium">{r.nome}</TableCell>
                     <TableCell>{r.categorias?.nome ?? "—"}</TableCell>
