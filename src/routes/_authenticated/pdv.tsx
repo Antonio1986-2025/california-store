@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Minus, Plus, Trash2, Loader2, ShoppingCart, CreditCard, Wallet, Smartphone, Banknote, UserCircle2 } from "lucide-react";
+import { Minus, Plus, Trash2, Loader2, ShoppingCart, CreditCard, Wallet, Smartphone, Banknote, UserCircle2, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import { brl, type Cliente, type ItemCarrinho, type Pagamento, type ProdutoBusca
 import { ProductSearch } from "@/components/erp/pdv/product-search";
 import { CustomerSearch } from "@/components/erp/pdv/customer-search";
 import { ReceiptModal, type ReceiptData } from "@/components/erp/pdv/receipt-modal";
+import { ScannerModal } from "@/components/erp/pdv/scanner-modal";
 
 export const Route = createFileRoute("/_authenticated/pdv")({
   component: PdvPage,
@@ -32,6 +33,7 @@ function PdvPage() {
   const [parcelas, setParcelas] = useState<number>(1);
   const [finalizing, setFinalizing] = useState(false);
   const [receipt, setReceipt] = useState<ReceiptData | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   const subtotal = useMemo(
     () => itens.reduce((acc, it) => acc + it.qtd * it.preco_unit - it.desconto, 0),
@@ -71,6 +73,37 @@ function PdvPage() {
       ];
     });
   }
+
+  async function handleScanned(code: string) {
+    setScannerOpen(false);
+    const term = code.trim();
+    if (!term) return;
+    const { data, error } = await supabase
+      .from("produto_variantes")
+      .select("id, sku, cor, tamanho, preco_venda, qtd_estoque, foto_url, produto_id, codigo_barras, produtos:produto_id(id, nome, codigo_barras)")
+      .or(`codigo_barras.eq.${term},sku.eq.${term}`)
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) {
+      toast.error("Produto não encontrado");
+      return;
+    }
+    const r: any = data;
+    addItem({
+      variante_id: r.id,
+      produto_id: r.produto_id ?? r.produtos?.id,
+      nome: r.produtos?.nome ?? "Produto",
+      sku: r.sku ?? null,
+      cor: r.cor ?? null,
+      tamanho: r.tamanho ?? null,
+      preco: Number(r.preco_venda) || 0,
+      qtd_estoque: Number(r.qtd_estoque) || 0,
+      foto_url: r.foto_url ?? null,
+      codigo_barras: r.codigo_barras ?? r.produtos?.codigo_barras ?? null,
+    });
+    toast.success("Produto adicionado");
+  }
+
   function setQtd(id: string, delta: number) {
     setItens((prev) =>
       prev
@@ -218,6 +251,11 @@ function PdvPage() {
       {/* Coluna esquerda */}
       <Card className="flex flex-col overflow-hidden lg:max-h-full">
         <CardContent className="pt-6 flex-1 overflow-y-auto">
+          <div className="flex justify-end mb-2">
+            <Button variant="outline" size="sm" onClick={() => setScannerOpen(true)}>
+              <Camera className="h-4 w-4 mr-1" /> Escanear
+            </Button>
+          </div>
           <ProductSearch onAdd={addItem} />
         </CardContent>
       </Card>
@@ -393,6 +431,7 @@ function PdvPage() {
       </Card>
 
       <ReceiptModal data={receipt} onClose={() => setReceipt(null)} />
+      <ScannerModal open={scannerOpen} onOpenChange={setScannerOpen} onDetected={handleScanned} />
     </div>
   );
 }
