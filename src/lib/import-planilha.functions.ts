@@ -210,7 +210,7 @@ export const importarPlanilha = createServerFn({ method: "POST" })
 
     for (const g of grupos) {
       // 1) categoria
-      let catId = catMap.get(g.categoria);
+      let catId: string | undefined = catMap.get(g.categoria);
       if (!catId && g.categoria) {
         const { data: nc, error } = await supabaseAdmin
           .from("categorias")
@@ -219,7 +219,7 @@ export const importarPlanilha = createServerFn({ method: "POST" })
           .single();
         if (error) throw new Error(`categoria ${g.categoria}: ${error.message}`);
         catId = nc.id;
-        catMap.set(g.categoria, catId);
+        catMap.set(g.categoria, catId!);
         categoriasCriadas++;
       }
 
