@@ -18,7 +18,7 @@ function ConsignacaoPage() {
     <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="space-y-4">
       <TabsList>
         <TabsTrigger value="lista">Lista</TabsTrigger>
-        <TabsTrigger value="nova">Nova consignação</TabsTrigger>
+        <TabsTrigger value="nova">Nova condicional</TabsTrigger>
         <TabsTrigger value="encerrar">Encerrar / Conferir</TabsTrigger>
       </TabsList>
 
