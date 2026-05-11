@@ -176,11 +176,11 @@
 
 /* ============ Etiquetas de produto ============ */
 .etiqueta {
-  width: 10cm;
-  height: 5cm;
+  width: 5cm;
+  height: 3cm;
   border: 1px solid #999;
   border-radius: 2px;
-  padding: 4mm;
+  padding: 2mm;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -191,18 +191,18 @@
   page-break-inside: avoid;
 }
 .etiqueta-nome {
-  font-size: 11pt;
+  font-size: 8pt;
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.1;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
-.etiqueta-meta { font-size: 9pt; color: #333; }
-.etiqueta-sku { font-size: 9pt; font-family: "Courier New", monospace; text-align: center; letter-spacing: 1px; }
-.etiqueta-preco { font-size: 14pt; font-weight: 800; text-align: right; }
-.etiqueta .barcode-svg { width: 100%; height: 1.6cm; display: block; }
+.etiqueta-meta { font-size: 7pt; color: #333; }
+.etiqueta-sku { font-size: 7pt; font-family: "Courier New", monospace; text-align: center; letter-spacing: 1px; }
+.etiqueta-preco { font-size: 10pt; font-weight: 800; text-align: right; }
+.etiqueta .barcode-svg { width: 100%; height: 0.9cm; display: block; }
 
 @media print {
   body * { visibility: hidden !important; }
