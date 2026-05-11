@@ -101,7 +101,7 @@ function Page() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            <Input placeholder="Buscar por nome..." value={busca} onChange={(e) => setBusca(e.target.value)} className="max-w-xs" />
+            <Input placeholder="Buscar por nome ou código..." value={busca} onChange={(e) => setBusca(e.target.value)} className="max-w-xs" />
             <Select value={catFiltro} onValueChange={setCatFiltro}>
               <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
               <SelectContent>
