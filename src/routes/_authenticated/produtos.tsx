@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Power } from "lucide-react";
+import { Plus, Pencil, Power, FileSpreadsheet } from "lucide-react";
 import { ProdutoForm } from "@/components/erp/produtos/produto-form";
+import { ImportarPlanilhaModal } from "@/components/erp/produtos/importar-modal";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/produtos")({
@@ -29,6 +30,7 @@ function Page() {
   const [statusFiltro, setStatusFiltro] = useState<string>("todos");
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
 
   const load = async () => {
     const { data } = await supabase
@@ -65,9 +67,14 @@ function Page() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Produtos</CardTitle>
-          <Button onClick={() => { setEditId(null); setOpen(true); }}>
-            <Plus className="h-4 w-4 mr-1" /> Novo Produto
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <FileSpreadsheet className="h-4 w-4 mr-1" /> Importar planilha
+            </Button>
+            <Button onClick={() => { setEditId(null); setOpen(true); }}>
+              <Plus className="h-4 w-4 mr-1" /> Novo Produto
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
@@ -140,6 +147,7 @@ function Page() {
       </Card>
 
       <ProdutoForm open={open} onOpenChange={setOpen} produtoId={editId} onSaved={load} />
+      <ImportarPlanilhaModal open={importOpen} onOpenChange={setImportOpen} onImported={load} />
     </div>
   );
 }
