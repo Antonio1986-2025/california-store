@@ -29,10 +29,10 @@ export function ComprovanteModal({
             <div id="receipt-print" className="p-6 font-mono text-sm bg-white text-black">
               <div className="text-center border-b border-dashed border-black pb-3 mb-3">
                 <p className="text-lg font-bold tracking-wider">CALIFORNIA STORES</p>
-                <p className="text-xs">Comprovante de Consignação — Saída</p>
+                <p className="text-xs">Comprovante de Condicional — Saída</p>
               </div>
               <div className="text-xs space-y-0.5 mb-3">
-                <p>Consignação: <span className="font-bold">{data.numero}</span></p>
+                <p>Condicional: <span className="font-bold">{data.numero}</span></p>
                 <p>Data: {data.data.toLocaleString("pt-BR")}</p>
                 {data.prazo && <p>Prazo devolução: {data.prazo.toLocaleDateString("pt-BR")}</p>}
                 <p>Cliente: {data.cliente_nome}</p>

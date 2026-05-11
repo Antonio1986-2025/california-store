@@ -96,7 +96,7 @@ export function NovaConsignacao({ onCriada }: { onCriada: () => void }) {
         })
         .select("id, data_saida")
         .single();
-      if (consErr || !cons) throw consErr ?? new Error("Falha ao criar consignação");
+      if (consErr || !cons) throw consErr ?? new Error("Falha ao criar condicional");
       const consignacao_id = cons.id as string;
 
       const itensRows = itens.map((i) => ({
@@ -134,7 +134,7 @@ export function NovaConsignacao({ onCriada }: { onCriada: () => void }) {
         total,
         observacoes: obs || null,
       });
-      toast.success(`Consignação ${numero} registrada!`);
+      toast.success(`Condicional ${numero} registrada!`);
       // reset
       setCliente(null);
       setItens([]);
@@ -142,7 +142,7 @@ export function NovaConsignacao({ onCriada }: { onCriada: () => void }) {
       setPrazo(defaultPrazo);
       onCriada();
     } catch (e: any) {
-      toast.error(e.message ?? "Erro ao registrar consignação.");
+      toast.error(e.message ?? "Erro ao registrar condicional.");
     } finally {
       setBusy(false);
     }
@@ -158,7 +158,7 @@ export function NovaConsignacao({ onCriada }: { onCriada: () => void }) {
       </Card>
 
       <Card className="flex flex-col">
-        <CardHeader className="pb-3"><CardTitle className="text-base">Dados da consignação</CardTitle></CardHeader>
+        <CardHeader className="pb-3"><CardTitle className="text-base">Dados da condicional</CardTitle></CardHeader>
         <CardContent className="space-y-4 flex-1">
           <div className="space-y-1">
             <Label className="text-xs">Cliente *</Label>
@@ -249,7 +249,7 @@ export function NovaConsignacao({ onCriada }: { onCriada: () => void }) {
 
         <div className="border-t bg-muted/30 px-4 py-3 space-y-3">
           <div className="flex justify-between text-base font-bold">
-            <span>Total em consignação</span>
+            <span>Total em condicional</span>
             <span>{brl(total)}</span>
           </div>
           <Button

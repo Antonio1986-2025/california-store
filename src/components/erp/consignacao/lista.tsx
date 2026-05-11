@@ -106,7 +106,7 @@ export function ListaConsignacoes({
           </SelectContent>
         </Select>
         <Button onClick={onNova}>
-          <Plus className="h-4 w-4 mr-1" /> Nova Consignação
+          <Plus className="h-4 w-4 mr-1" /> Nova Condicional
         </Button>
       </div>
 
@@ -134,7 +134,7 @@ export function ListaConsignacoes({
             ) : filtered.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                  Nenhuma consignação encontrada.
+                  Nenhuma condicional encontrada.
                 </TableCell>
               </TableRow>
             ) : (

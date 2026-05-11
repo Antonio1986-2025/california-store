@@ -64,7 +64,7 @@ function RelatoriosPage() {
         <TabsList>
           <TabsTrigger value="vendas">Vendas</TabsTrigger>
           <TabsTrigger value="estoque">Estoque</TabsTrigger>
-          <TabsTrigger value="consignacoes">Consignações</TabsTrigger>
+          <TabsTrigger value="consignacoes">Condicionais</TabsTrigger>
           <TabsTrigger value="comissoes">Comissões</TabsTrigger>
         </TabsList>
         <TabsContent value="vendas"><RelVendas /></TabsContent>

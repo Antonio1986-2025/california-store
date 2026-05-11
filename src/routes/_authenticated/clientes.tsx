@@ -246,7 +246,7 @@ function ClientePerfil({ clienteId, onClose, onChanged }: { clienteId: string | 
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">Histórico de consignações</h3>
+              <h3 className="font-semibold mb-2">Histórico de condicionais</h3>
               <Table><TableHeader><TableRow><TableHead>Data</TableHead><TableHead>Total</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {consigs.map((c) => (
@@ -256,7 +256,7 @@ function ClientePerfil({ clienteId, onClose, onChanged }: { clienteId: string | 
                       <TableCell><Badge variant="outline">{c.status}</Badge></TableCell>
                     </TableRow>
                   ))}
-                  {consigs.length === 0 && <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">Sem consignações.</TableCell></TableRow>}
+                  {consigs.length === 0 && <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">Sem condicionais.</TableCell></TableRow>}
                 </TableBody>
               </Table>
             </div>

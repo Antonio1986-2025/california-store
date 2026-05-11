@@ -34,7 +34,7 @@ export function EncerrarConsignacao({
   const [busy, setBusy] = useState(false);
   const [loadingItens, setLoadingItens] = useState(false);
 
-  // load consignações abertas/parciais
+  // load condicionais abertas/parciais
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -63,7 +63,7 @@ export function EncerrarConsignacao({
     if (initialId) setSelectedId(initialId);
   }, [initialId]);
 
-  // load itens da consignação selecionada
+  // load itens da condicional selecionada
   useEffect(() => {
     if (!selectedId) {
       setItens([]);
@@ -155,11 +155,11 @@ export function EncerrarConsignacao({
       });
 
       if (error || !(data as any)?.ok) {
-        toast.error((data as any)?.erro ?? error?.message ?? "Erro ao encerrar consignação.");
+        toast.error((data as any)?.erro ?? error?.message ?? "Erro ao encerrar condicional.");
         return;
       }
 
-      toast.success("Consignação encerrada!");
+      toast.success("Condicional encerrada!");
       setSelectedId(null);
       setItens([]);
       onEncerrada();
@@ -171,7 +171,7 @@ export function EncerrarConsignacao({
   return (
     <div className="grid gap-4 grid-cols-1 lg:grid-cols-[2fr_3fr]">
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base">Selecionar consignação</CardTitle></CardHeader>
+        <CardHeader className="pb-3"><CardTitle className="text-base">Selecionar condicional</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -184,7 +184,7 @@ export function EncerrarConsignacao({
           </div>
           <div className="border rounded-md max-h-[60vh] overflow-y-auto">
             {filtered.length === 0 ? (
-              <p className="text-sm text-muted-foreground p-4 text-center">Nenhuma consignação aberta.</p>
+              <p className="text-sm text-muted-foreground p-4 text-center">Nenhuma condicional aberta.</p>
             ) : (
               filtered.map((r) => (
                 <button
@@ -217,7 +217,7 @@ export function EncerrarConsignacao({
         <CardContent className="flex-1 space-y-4">
           {!selectedId ? (
             <p className="text-sm text-muted-foreground text-center py-8">
-              Selecione uma consignação ao lado.
+              Selecione uma condicional ao lado.
             </p>
           ) : loadingItens ? (
             <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin" /></div>
@@ -306,7 +306,7 @@ export function EncerrarConsignacao({
                   disabled={busy || !selectedId}
                 >
                   {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Encerrar Consignação
+                  Encerrar Condicional
                 </Button>
               </div>
             </>

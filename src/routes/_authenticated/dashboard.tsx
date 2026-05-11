@@ -150,7 +150,7 @@ function DashboardPage() {
     { title: "Vendas Hoje", value: brl(m.vendasHoje), variation: m.varHoje, icon: DollarSign, sub: "vs ontem" },
     { title: "Vendas do Mês", value: brl(m.vendasMes), variation: m.varMes, icon: Calendar, sub: "vs mês anterior" },
     { title: "Itens no Estoque", value: m.estoque.toLocaleString("pt-BR"), variation: null, icon: Boxes, sub: "unidades disponíveis" },
-    { title: "Consignações Abertas", value: m.consignacoes.toLocaleString("pt-BR"), variation: null, icon: Handshake, sub: "em andamento" },
+    { title: "Condicionais Abertas", value: m.consignacoes.toLocaleString("pt-BR"), variation: null, icon: Handshake, sub: "em andamento" },
   ];
 
   return (
@@ -160,9 +160,9 @@ function DashboardPage() {
           {alerts.vencidas > 0 && (
             <Link to="/consignacao" className="flex items-center justify-between rounded-md border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-900 hover:bg-yellow-100">
               <span className="flex items-center gap-2"><AlertTriangle className="h-4 w-4" />
-                {alerts.vencidas} consignação(ões) vencida(s) sem encerramento.
+                {alerts.vencidas} condicional(ões) vencida(s) sem encerramento.
               </span>
-              <span className="text-xs underline">Ver consignações</span>
+              <span className="text-xs underline">Ver condicionais</span>
             </Link>
           )}
           {alerts.semEstoque > 0 && (

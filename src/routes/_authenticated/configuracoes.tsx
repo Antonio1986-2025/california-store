@@ -83,7 +83,7 @@ function ResetDadosCard() {
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground">
-          Apaga <strong>vendas, pagamentos, consignações, caixa, financeiro,
+          Apaga <strong>vendas, pagamentos, condicionais, caixa, financeiro,
           movimentações de estoque e pedidos de compra</strong>. Mantém
           produtos, clientes, fornecedores, funcionários e categorias.
         </p>
