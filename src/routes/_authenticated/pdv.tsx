@@ -80,8 +80,8 @@ function PdvPage() {
     if (!term) return;
     const { data, error } = await supabase
       .from("produto_variantes")
-      .select("id, sku, cor, tamanho, preco_venda, qtd_estoque, foto_url, produto_id, codigo_barras, produtos:produto_id(id, nome, codigo_barras)")
-      .or(`codigo_barras.eq.${term},sku.eq.${term}`)
+      .select("id, cor, tamanho, preco_venda, qtd_estoque, foto_url, produto_id, codigo_barras, produtos:produto_id(id, nome)")
+      .eq("codigo_barras", term)
       .limit(1)
       .maybeSingle();
     if (error || !data) {
@@ -93,13 +93,13 @@ function PdvPage() {
       variante_id: r.id,
       produto_id: r.produto_id ?? r.produtos?.id,
       nome: r.produtos?.nome ?? "Produto",
-      sku: r.sku ?? null,
+      sku: null,
       cor: r.cor ?? null,
       tamanho: r.tamanho ?? null,
       preco: Number(r.preco_venda) || 0,
       qtd_estoque: Number(r.qtd_estoque) || 0,
       foto_url: r.foto_url ?? null,
-      codigo_barras: r.codigo_barras ?? r.produtos?.codigo_barras ?? null,
+      codigo_barras: r.codigo_barras ?? null,
     });
     toast.success("Produto adicionado");
   }
