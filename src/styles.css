@@ -173,3 +173,53 @@
   /* Tables already wrap in overflow-auto from shadcn — keep min-width so columns don't squish */
   table { min-width: max-content; }
 }
+
+/* ============ Etiquetas de produto ============ */
+.etiqueta {
+  width: 10cm;
+  height: 5cm;
+  border: 1px solid #999;
+  border-radius: 2px;
+  padding: 4mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #fff;
+  color: #000;
+  font-family: Arial, Helvetica, sans-serif;
+  box-sizing: border-box;
+  page-break-inside: avoid;
+}
+.etiqueta-nome {
+  font-size: 11pt;
+  font-weight: 700;
+  line-height: 1.15;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.etiqueta-meta { font-size: 9pt; color: #333; }
+.etiqueta-sku { font-size: 9pt; font-family: "Courier New", monospace; text-align: center; letter-spacing: 1px; }
+.etiqueta-preco { font-size: 14pt; font-weight: 800; text-align: right; }
+.etiqueta .barcode-svg { width: 100%; height: 1.6cm; display: block; }
+
+@media print {
+  body * { visibility: hidden !important; }
+  .etiqueta-print-area, .etiqueta-print-area * { visibility: visible !important; }
+  .no-print { display: none !important; }
+  .etiqueta-print-area {
+    position: fixed !important;
+    inset: 0 !important;
+    background: #fff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-content: flex-start !important;
+    gap: 2mm !important;
+    border-radius: 0 !important;
+  }
+  .etiqueta { border-color: #000; }
+  @page { size: auto; margin: 5mm; }
+}
