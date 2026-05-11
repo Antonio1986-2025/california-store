@@ -10,7 +10,6 @@ import { toast } from "sonner";
 
 type Variante = {
   id: string;
-  sku: string | null;
   cor: string | null;
   tamanho: string | null;
   codigo_barras: string | null;
@@ -71,7 +70,7 @@ export function EtiquetaModal({
       }
       const { data: vars, error: e2 } = await supabase
         .from("produto_variantes")
-        .select("id, sku, cor, tamanho, codigo_barras, preco_venda")
+        .select("id, cor, tamanho, codigo_barras, preco_venda")
         .eq("produto_id", produtoId);
       if (e2) {
         toast.error(e2.message);
@@ -88,7 +87,7 @@ export function EtiquetaModal({
     [produto, varianteId],
   );
 
-  const codigo = (variante?.codigo_barras?.trim() || variante?.sku?.trim() || produto?.id || "").toString();
+  const codigo = (variante?.codigo_barras?.trim() || "").toString();
   const preco = Number(variante?.preco_venda ?? produto?.preco_venda ?? 0);
 
   useEffect(() => {
@@ -144,7 +143,7 @@ export function EtiquetaModal({
                     {produto.produto_variantes.map((v) => (
                       <SelectItem key={v.id} value={v.id}>
                         {[v.cor, v.tamanho].filter(Boolean).join(" / ") || "Padrão"}
-                        {v.sku ? ` — ${v.sku}` : ""}
+                        {v.codigo_barras ? ` — ${v.codigo_barras}` : ""}
                       </SelectItem>
                     ))}
                   </SelectContent>
