@@ -102,33 +102,55 @@ function processar(values: string[][]) {
   for (const r of data) {
     const sku = norm(r[0]);
     if (!sku) continue;
-    const linha: LinhaProcessada = {
-      sku,
+    const tamanhoRaw = normUpper(r[6]);
+    const qtdTotal = parseQtd(r[8]);
+    const custo = parseMoney(r[9]);
+    const venda = parseMoney(r[10]);
+    const base = {
       fornecedorCodigo: norm(r[1]),
       categoria: normCategoria(r[2] ?? ""),
       marca: normUpper(r[3]),
       descricao: normUpper(r[4]),
       genero: normUpper(r[5]),
-      tamanho: normUpper(r[6]),
       cor: normUpper(r[7]),
-      qtd: parseQtd(r[8]),
-      custo: parseMoney(r[9]),
-      venda: parseMoney(r[10]),
+      custo,
+      venda,
       foto: convertFoto(r[11]),
     };
-    if (skuSeen.has(linha.sku)) {
-      avisos.push({ sku: linha.sku, motivo: "SKU duplicado na planilha" });
+    // Quando tamanho contém "/", a quantidade total é distribuída entre os tamanhos
+    // (ex.: "P/M/G" com qtd 3 → 1 P + 1 M + 1 G; com qtd 5 → 2 P + 2 M + 1 G).
+    const tamanhos = tamanhoRaw
+      .split("/")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    const partes = tamanhos.length > 1 ? tamanhos : [tamanhoRaw];
+    const n = partes.length;
+    const baseQtd = n > 0 ? Math.floor(qtdTotal / n) : qtdTotal;
+    let resto = n > 0 ? qtdTotal - baseQtd * n : 0;
+
+    if (skuSeen.has(sku)) {
+      avisos.push({ sku, motivo: "SKU duplicado na planilha" });
       continue;
     }
-    skuSeen.add(linha.sku);
-    if (linha.venda === 0 && linha.custo === 0) {
-      avisos.push({ sku: linha.sku, motivo: "Sem preço (custo e venda)" });
+    skuSeen.add(sku);
+    if (venda === 0 && custo === 0) {
+      avisos.push({ sku, motivo: "Sem preço (custo e venda)" });
     }
-    if (!linha.foto) avisos.push({ sku: linha.sku, motivo: "Sem foto" });
-    if (!linha.categoria || !linha.marca) {
-      avisos.push({ sku: linha.sku, motivo: "Categoria ou marca vazia" });
+    if (!base.foto) avisos.push({ sku, motivo: "Sem foto" });
+    if (!base.categoria || !base.marca) {
+      avisos.push({ sku, motivo: "Categoria ou marca vazia" });
     }
-    linhas.push(linha);
+
+    for (const tam of partes) {
+      const q = baseQtd + (resto > 0 ? 1 : 0);
+      if (resto > 0) resto--;
+      linhas.push({
+        sku: n > 1 ? `${sku}-${tam}` : sku,
+        ...base,
+        tamanho: tam,
+        qtd: q,
+      });
+    }
   }
 
   // agrupar por marca|categoria|descricao|genero
