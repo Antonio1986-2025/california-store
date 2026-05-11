@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/produtos")({
 type Row = {
   id: string; nome: string; ativo: boolean; preco_venda: number; foto_url: string | null;
   categoria_id: string | null; categorias?: { nome: string } | null;
-  produto_variantes: { id: string; qtd_estoque: number }[];
+  produto_variantes: { id: string; qtd_estoque: number; codigo_barras: string | null }[];
 };
 
 function Page() {
@@ -37,7 +37,7 @@ function Page() {
   const load = async () => {
     const { data } = await supabase
       .from("produtos")
-      .select("id, nome, ativo, preco_venda, foto_url, categoria_id, categorias(nome), produto_variantes(id, qtd_estoque)")
+      .select("id, nome, ativo, preco_venda, foto_url, categoria_id, categorias(nome), produto_variantes(id, qtd_estoque, codigo_barras)")
       .order("nome");
     setRows((data as any) ?? []);
     const { data: cats } = await supabase.from("categorias").select("id, nome").order("nome");
@@ -69,7 +69,11 @@ function Page() {
       if (catFiltro !== "todas" && r.categoria_id !== catFiltro) return false;
       if (statusFiltro === "ativos" && !r.ativo) return false;
       if (statusFiltro === "inativos" && r.ativo) return false;
-      if (t && !norm(r.nome).includes(t)) return false;
+      if (t) {
+        const inNome = norm(r.nome).includes(t);
+        const inCod = r.produto_variantes.some((v) => norm(v.codigo_barras ?? "").includes(t));
+        if (!inNome && !inCod) return false;
+      }
       return true;
     });
   }, [rows, busca, catFiltro, statusFiltro]);
