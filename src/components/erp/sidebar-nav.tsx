@@ -21,7 +21,7 @@ const items = [
   { to: "/produtos", label: "Produtos", icon: Package },
   { to: "/estoque", label: "Estoque", icon: Boxes },
   { to: "/clientes", label: "Clientes", icon: Users },
-  { to: "/consignacao", label: "Consignação", icon: Handshake },
+  { to: "/consignacao", label: "Condicional", icon: Handshake },
   { to: "/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/fornecedores", label: "Fornecedores", icon: Truck },
   { to: "/relatorios", label: "Relatórios", icon: BarChart3 },
