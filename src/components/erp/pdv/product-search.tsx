@@ -26,7 +26,7 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
         const { data: byCode, error: codeErr } = await supabase
           .from("produto_variantes")
           .select(
-            "id, cor, tamanho, codigo_barras, preco_venda, qtd_estoque, foto_url, produto_id, produtos:produto_id(id, nome)"
+            "id, cor, tamanho, codigo_barras, preco_venda, qtd_estoque, produto_id, produtos:produto_id(id, nome, foto_url)"
           )
           .ilike("codigo_barras", `%${term}%`)
           .limit(40);
@@ -42,7 +42,7 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
           const { data: byName, error: nameErr } = await supabase
             .from("produtos")
             .select(
-              "id, nome, produto_variantes(id, cor, tamanho, codigo_barras, preco_venda, qtd_estoque, foto_url, produto_id)"
+              "id, nome, foto_url, produto_variantes(id, cor, tamanho, codigo_barras, preco_venda, qtd_estoque, produto_id)"
             )
             .ilike("nome", `%${term}%`)
             .limit(20);
@@ -54,7 +54,7 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
           const flat: any[] = [];
           (byName ?? []).forEach((p: any) => {
             (p.produto_variantes ?? []).forEach((v: any) =>
-              flat.push({ ...v, produtos: { id: p.id, nome: p.nome } })
+              flat.push({ ...v, produtos: { id: p.id, nome: p.nome, foto_url: p.foto_url ?? null } })
             );
           });
           rows = flat;
@@ -69,7 +69,7 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
             tamanho: r.tamanho ?? null,
             preco: Number(r.preco_venda) || 0,
             qtd_estoque: Number(r.qtd_estoque) || 0,
-            foto_url: r.foto_url ?? null,
+            foto_url: r.produtos?.foto_url ?? null,
             codigo_barras: r.codigo_barras ?? null,
           }))
         );
@@ -94,7 +94,7 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
           autoFocus
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Buscar por nome, SKU ou código de barras…"
+          placeholder="Buscar por nome ou código de barras…"
           className="pl-9 h-12 text-base"
         />
         {loading && (
