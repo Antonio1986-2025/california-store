@@ -21,7 +21,6 @@ type Produto = {
   id: string;
   nome: string;
   preco_venda: number;
-  codigo_barras: string | null;
   produto_variantes: Variante[];
 };
 
@@ -62,7 +61,7 @@ export function EtiquetaModal({
     (async () => {
       const { data: prod, error: e1 } = await supabase
         .from("produtos")
-        .select("id, nome, preco_venda, codigo_barras")
+        .select("id, nome, preco_venda")
         .eq("id", produtoId)
         .maybeSingle();
       if (e1 || !prod) {
@@ -89,7 +88,7 @@ export function EtiquetaModal({
     [produto, varianteId],
   );
 
-  const codigo = (variante?.codigo_barras?.trim() || variante?.sku?.trim() || produto?.codigo_barras?.trim() || produto?.id || "").toString();
+  const codigo = (variante?.codigo_barras?.trim() || variante?.sku?.trim() || produto?.id || "").toString();
   const preco = Number(variante?.preco_venda ?? produto?.preco_venda ?? 0);
 
   useEffect(() => {
