@@ -47,7 +47,7 @@ function Page() {
   const norm = (s: string) =>
     (s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-  const driveImg = (url?: string | null, size = 200): string | null => {
+  const driveImg = (url?: string | null, size = 800): string | null => {
     if (!url) return null;
     // https://lh3.googleusercontent.com/d/{id}
     const m1 = url.match(/lh3\.googleusercontent\.com\/d\/([A-Za-z0-9_-]+)/);
@@ -133,7 +133,7 @@ function Page() {
                   <TableRow key={r.id}>
                     <TableCell>
                        {r.foto_url && driveImg(r.foto_url)
-                         ? <img src={driveImg(r.foto_url, 100)!} alt="" referrerPolicy="no-referrer" className="h-10 w-10 object-cover rounded" onError={(e)=>{(e.currentTarget as HTMLImageElement).style.visibility='hidden';}} />
+                         ? <img src={driveImg(r.foto_url, 400)!} alt="" referrerPolicy="no-referrer" loading="lazy" className="h-10 w-10 object-cover rounded" onError={(e)=>{(e.currentTarget as HTMLImageElement).style.visibility='hidden';}} />
                          : <div className="h-10 w-10 bg-muted rounded" />}
                     </TableCell>
                     <TableCell className="font-medium">{r.nome}</TableCell>
