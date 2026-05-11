@@ -162,8 +162,8 @@ function Page() {
                   <SelectItem value="todos">Todos os tipos</SelectItem>
                   <SelectItem value="entrada">Entrada</SelectItem>
                   <SelectItem value="saida_venda">Saída venda</SelectItem>
-                  <SelectItem value="saida_consig">Saída consignação</SelectItem>
-                  <SelectItem value="devolucao_consig">Devolução consignação</SelectItem>
+                  <SelectItem value="saida_consig">Saída condicional</SelectItem>
+                  <SelectItem value="devolucao_consig">Devolução condicional</SelectItem>
                   <SelectItem value="ajuste_positivo">Ajuste +</SelectItem>
                   <SelectItem value="ajuste_negativo">Ajuste -</SelectItem>
                 </SelectContent>
@@ -187,7 +187,7 @@ function Page() {
                       <TableCell><Badge variant="outline">{m.tipo}</Badge></TableCell>
                       <TableCell className={Number(m.quantidade) < 0 ? "text-destructive" : "text-green-600"}>{m.quantidade}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">
-                        {m.venda_id ? `Venda` : m.consignacao_id ? `Consig.` : "—"}
+                        {m.venda_id ? `Venda` : m.consignacao_id ? `Cond.` : "—"}
                       </TableCell>
                       <TableCell>{m.motivo ?? "—"}</TableCell>
                     </TableRow>
