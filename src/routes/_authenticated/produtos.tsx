@@ -44,13 +44,16 @@ function Page() {
 
   useEffect(() => { load(); }, []);
 
+  const norm = (s: string) =>
+    (s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
   const filtered = useMemo(() => {
-    const t = busca.toLowerCase();
+    const t = norm(busca);
     return rows.filter((r) => {
       if (catFiltro !== "todas" && r.categoria_id !== catFiltro) return false;
       if (statusFiltro === "ativos" && !r.ativo) return false;
       if (statusFiltro === "inativos" && r.ativo) return false;
-      if (t && !r.nome.toLowerCase().includes(t)) return false;
+      if (t && !norm(r.nome).includes(t)) return false;
       return true;
     });
   }, [rows, busca, catFiltro, statusFiltro]);
