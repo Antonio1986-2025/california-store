@@ -239,19 +239,52 @@ export function ProdutoForm({ open, onOpenChange, produtoId, onSaved }: Props) {
                 <Plus className="h-4 w-4 mr-1" /> Adicionar
               </Button>
             </div>
+            <div className="grid gap-2 mb-3">
+              <Label className="text-xs">Código do fornecedor (gera o SKU das variantes)</Label>
+              <Input
+                value={codigoFornecedor}
+                onChange={(e) => setCodigoFornecedor(e.target.value)}
+                placeholder="Ex.: 6361518176115"
+              />
+            </div>
             <div className="grid gap-2">
-              {variantes.map((v, i) => (
-                <div key={i} className="grid grid-cols-[1fr_1fr_1.5fr_0.7fr_0.9fr_auto] gap-2 items-end">
-                  <div><Label className="text-xs">Cor</Label><Input value={v.cor} onChange={(e) => updateVar(i, { cor: e.target.value })} /></div>
-                  <div><Label className="text-xs">Tamanho</Label><Input value={v.tamanho} onChange={(e) => updateVar(i, { tamanho: e.target.value })} /></div>
-                  <div><Label className="text-xs">Código de barras</Label><Input value={v.codigo_barras} onChange={(e) => updateVar(i, { codigo_barras: e.target.value })} /></div>
-                  <div><Label className="text-xs">Estoque</Label><Input type="number" value={v.qtd_estoque} onChange={(e) => updateVar(i, { qtd_estoque: Number(e.target.value) })} /></div>
-                  <div><Label className="text-xs">Preço</Label><Input type="number" step="0.01" value={v.preco_venda ?? ""} onChange={(e) => updateVar(i, { preco_venda: e.target.value === "" ? null : Number(e.target.value) })} /></div>
-                  <Button size="icon" variant="ghost" onClick={() => setVariantes((p) => p.filter((_, idx) => idx !== i))}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+              {variantes.map((v, i) => {
+                const sugestao = codigoFornecedor
+                  ? gerarCodigoVariante({ prefixo: codigoFornecedor, cor: v.cor, tamanho: v.tamanho })
+                  : "";
+                return (
+                  <div key={i} className="grid grid-cols-[1fr_1fr_1.5fr_0.7fr_0.9fr_auto] gap-2 items-end">
+                    <div><Label className="text-xs">Cor</Label><Input value={v.cor} onChange={(e) => updateVar(i, { cor: e.target.value })} /></div>
+                    <div><Label className="text-xs">Tamanho</Label><Input value={v.tamanho} onChange={(e) => updateVar(i, { tamanho: e.target.value })} /></div>
+                    <div>
+                      <Label className="text-xs">Código único</Label>
+                      <div className="flex gap-1">
+                        <Input
+                          value={v.codigo_barras}
+                          placeholder={sugestao || "—"}
+                          onChange={(e) => updateVar(i, { codigo_barras: e.target.value })}
+                        />
+                        {sugestao && v.codigo_barras !== sugestao && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="shrink-0 px-2 text-xs"
+                            onClick={() => updateVar(i, { codigo_barras: sugestao })}
+                          >
+                            Usar
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    <div><Label className="text-xs">Estoque</Label><Input type="number" value={v.qtd_estoque} onChange={(e) => updateVar(i, { qtd_estoque: Number(e.target.value) })} /></div>
+                    <div><Label className="text-xs">Preço</Label><Input type="number" step="0.01" value={v.preco_venda ?? ""} onChange={(e) => updateVar(i, { preco_venda: e.target.value === "" ? null : Number(e.target.value) })} /></div>
+                    <Button size="icon" variant="ghost" onClick={() => setVariantes((p) => p.filter((_, idx) => idx !== i))}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
