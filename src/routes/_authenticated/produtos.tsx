@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Power, FileSpreadsheet } from "lucide-react";
+import { Plus, Pencil, Power, FileSpreadsheet, Tag } from "lucide-react";
 import { ProdutoForm } from "@/components/erp/produtos/produto-form";
 import { ImportarPlanilhaModal } from "@/components/erp/produtos/importar-modal";
+import { EtiquetaModal } from "@/components/erp/produtos/etiqueta-modal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
@@ -33,6 +34,7 @@ function Page() {
   const [editId, setEditId] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [zoomUrl, setZoomUrl] = useState<string | null>(null);
+  const [etiquetaId, setEtiquetaId] = useState<string | null>(null);
 
   const load = async () => {
     const { data } = await supabase
@@ -162,6 +164,9 @@ function Page() {
                       <Button size="icon" variant="ghost" onClick={() => { setEditId(r.id); setOpen(true); }}>
                         <Pencil className="h-4 w-4" />
                       </Button>
+                      <Button size="icon" variant="ghost" title="Etiqueta" onClick={() => setEtiquetaId(r.id)}>
+                        <Tag className="h-4 w-4" />
+                      </Button>
                       <Button size="icon" variant="ghost" onClick={() => toggleAtivo(r)}>
                         <Power className="h-4 w-4" />
                       </Button>
@@ -179,6 +184,11 @@ function Page() {
 
       <ProdutoForm open={open} onOpenChange={setOpen} produtoId={editId} onSaved={load} />
       <ImportarPlanilhaModal open={importOpen} onOpenChange={setImportOpen} onImported={load} />
+      <EtiquetaModal
+        produtoId={etiquetaId}
+        open={!!etiquetaId}
+        onOpenChange={(o) => !o && setEtiquetaId(null)}
+      />
       <Dialog open={!!zoomUrl} onOpenChange={(o) => !o && setZoomUrl(null)}>
         <DialogContent className="max-w-3xl p-2 bg-background">
           {zoomUrl && (
