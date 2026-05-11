@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { gerarCodigosLote } from "./sku-format";
 
 const SHEET_ID = "1VFs17y1R_UtU86buz_LQZfN-5a8k_sNbqn83dX_aZM4";
 const SHEET_RANGE = "A1:L999";
@@ -54,6 +55,7 @@ export type LinhaProcessada = {
   custo: number;
   venda: number;
   foto: string | null;
+  codigoVariante?: string;
 };
 
 export type Grupo = {
@@ -155,6 +157,26 @@ function processar(values: string[][]) {
   }
 
   const grupos = [...mapa.values()];
+  // Gera código no formato CODFORN-COR3[-TAM] por grupo (resolve colisões)
+  for (const g of grupos) {
+    const prefixos = g.variantes.map(
+      (v) => v.fornecedorCodigo || v.sku || "",
+    );
+    // Se todas as variantes do grupo compartilham o mesmo fornecedorCodigo, usa ele;
+    // caso contrário, cada variante usa seu próprio prefixo.
+    const unico = prefixos.every((p) => p === prefixos[0]) ? prefixos[0] : null;
+    if (unico) {
+      const codigos = gerarCodigosLote(unico, g.variantes);
+      g.variantes.forEach((v, i) => (v.codigoVariante = codigos[i] || v.sku));
+    } else {
+      g.variantes.forEach((v) => {
+        const pref = v.fornecedorCodigo || v.sku;
+        const [c] = gerarCodigosLote(pref, [v]);
+        v.codigoVariante = c || v.sku;
+      });
+    }
+  }
+
   const categorias = new Map<string, number>();
   const marcas = new Map<string, number>();
   for (const l of linhas) {
@@ -244,7 +266,8 @@ export const importarPlanilha = createServerFn({ method: "POST" })
 
       // 3) variantes
       for (const v of g.variantes) {
-        if (v.sku && skuExistentes.has(v.sku)) {
+        const codigo = v.codigoVariante || v.sku;
+        if (codigo && skuExistentes.has(codigo)) {
           variantesPuladas++;
           continue;
         }
@@ -252,13 +275,13 @@ export const importarPlanilha = createServerFn({ method: "POST" })
           produto_id: np.id,
           cor: v.cor || null,
           tamanho: v.tamanho || null,
-          codigo_barras: v.sku || null,
+          codigo_barras: codigo || null,
           qtd_estoque: v.qtd,
           preco_venda: v.venda || g.precoVendaMax,
           preco_custo: v.custo || g.precoCustoMax,
         });
-        if (ve) throw new Error(`variante ${v.sku}: ${ve.message}`);
-        if (v.sku) skuExistentes.add(v.sku);
+        if (ve) throw new Error(`variante ${codigo}: ${ve.message}`);
+        if (codigo) skuExistentes.add(codigo);
         variantesCriadas++;
       }
     }
