@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { Printer } from "lucide-react";
+import { toast } from "sonner";
 
 type Variante = {
   id: string;
@@ -59,14 +60,26 @@ export function EtiquetaModal({
   useEffect(() => {
     if (!open || !produtoId) return;
     (async () => {
-      const { data } = await supabase
+      const { data: prod, error: e1 } = await supabase
         .from("produtos")
-        .select("id, nome, preco_venda, codigo_barras, produto_variantes(id, sku, cor, tamanho, codigo_barras, preco_venda)")
+        .select("id, nome, preco_venda, codigo_barras")
         .eq("id", produtoId)
-        .single();
-      setProduto((data as any) ?? null);
-      const first = (data as any)?.produto_variantes?.[0]?.id ?? "";
-      setVarianteId(first);
+        .maybeSingle();
+      if (e1 || !prod) {
+        toast.error(e1?.message ?? "Produto não encontrado");
+        setProduto(null);
+        return;
+      }
+      const { data: vars, error: e2 } = await supabase
+        .from("produto_variantes")
+        .select("id, sku, cor, tamanho, codigo_barras, preco_venda")
+        .eq("produto_id", produtoId);
+      if (e2) {
+        toast.error(e2.message);
+      }
+      const lista = (vars as any[]) ?? [];
+      setProduto({ ...(prod as any), produto_variantes: lista });
+      setVarianteId(lista[0]?.id ?? "");
       setCopias(1);
     })();
   }, [open, produtoId]);
@@ -115,7 +128,13 @@ export function EtiquetaModal({
           <DialogTitle>Imprimir Etiqueta</DialogTitle>
         </DialogHeader>
 
-        {produto && (
+        {produto && produto.produto_variantes.length === 0 && (
+          <p className="text-sm text-muted-foreground no-print">
+            Este produto não tem variantes cadastradas.
+          </p>
+        )}
+
+        {produto && produto.produto_variantes.length > 0 && (
           <div className="space-y-4 no-print">
             <div className="grid grid-cols-2 gap-3">
               <div>
