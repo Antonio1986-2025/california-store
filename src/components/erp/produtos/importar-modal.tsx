@@ -144,6 +144,9 @@ export function ImportarPlanilhaModal({
                     ))}
                   </TableBody>
                 </Table>
+                <p className="text-xs text-muted-foreground mt-2">
+                  SKU exemplo: <span className="font-mono">{data.grupos[0]?.variantes[0]?.codigoVariante ?? "—"}</span>
+                </p>
               </div>
             </div>
           </ScrollArea>
