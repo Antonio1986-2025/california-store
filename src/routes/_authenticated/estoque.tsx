@@ -88,7 +88,7 @@ function Page() {
     <div className="space-y-4">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card><CardContent className="pt-6 flex items-center gap-3"><Boxes className="h-8 w-8 text-primary" /><div><p className="text-xs text-muted-foreground">SKUs</p><p className="text-2xl font-bold">{totals.skus}</p></div></CardContent></Card>
-        <Card><CardContent className="pt-6 flex items-center gap-3"><DollarSign className="h-8 w-8 text-primary" /><div><p className="text-xs text-muted-foreground">Valor em estoque</p><p className="text-2xl font-bold">R$ {totals.valor.toFixed(2)}</p></div></CardContent></Card>
+        <Card><CardContent className="pt-6 flex items-center gap-3"><DollarSign className="h-8 w-8 text-primary" /><div><p className="text-xs text-muted-foreground">Valor em estoque</p><p className="text-2xl font-bold">{totals.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p></div></CardContent></Card>
         <Card><CardContent className="pt-6 flex items-center gap-3"><AlertTriangle className="h-8 w-8 text-yellow-500" /><div><p className="text-xs text-muted-foreground">Críticos</p><p className="text-2xl font-bold">{totals.criticos}</p></div></CardContent></Card>
         <Card><CardContent className="pt-6 flex items-center gap-3"><XCircle className="h-8 w-8 text-destructive" /><div><p className="text-xs text-muted-foreground">Zerados</p><p className="text-2xl font-bold">{totals.zerados}</p></div></CardContent></Card>
       </div>
