@@ -7,10 +7,13 @@ let _client: SupabaseClient | null = null;
 
 function getClient(): SupabaseClient {
   if (_client) return _client;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+    const key =
+      process.env.SERVICE_ROLE_KEY ??
+      process.env.SUPABASE_SERVICE_ROLE_KEY ??
+      "";
   if (!key) {
     throw new Error(
-      "SUPABASE_SERVICE_ROLE_KEY não configurada. Habilite o Lovable Cloud para realizar a importação.",
+        "SERVICE_ROLE_KEY não configurada nos secrets do projeto.",
     );
   }
   _client = createClient(SUPABASE_URL, key, {
