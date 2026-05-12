@@ -25,6 +25,34 @@ type Cliente = {
   observacoes: string | null; saldo_credito: number | null;
 };
 
+const CLIENTES_SCHEMA_CACHE_ERROR = /Could not find the '([^']+)' column of 'clientes' in the schema cache/i;
+
+async function saveClienteWithFallback(payload: Record<string, unknown>, clienteId: string | null) {
+  const strippedColumns: string[] = [];
+  let nextPayload = { ...payload };
+
+  while (true) {
+    const op = clienteId
+      ? supabase.from("clientes").update(nextPayload).eq("id", clienteId)
+      : supabase.from("clientes").insert(nextPayload);
+
+    const { error } = await op;
+
+    if (!error) {
+      return { error: null, strippedColumns };
+    }
+
+    const missingColumn = error.message.match(CLIENTES_SCHEMA_CACHE_ERROR)?.[1];
+    if (!missingColumn || !(missingColumn in nextPayload)) {
+      return { error, strippedColumns };
+    }
+
+    strippedColumns.push(missingColumn);
+    const { [missingColumn]: _removed, ...remaining } = nextPayload;
+    nextPayload = remaining;
+  }
+}
+
 function Page() {
   const [rows, setRows] = useState<Cliente[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
@@ -125,12 +153,12 @@ function ClienteForm({ open, onOpenChange, clienteId, onSaved }: { open: boolean
     const payload: any = { ...c };
     delete payload.saldo_credito; // somente leitura
     delete payload.id;
-    const op = clienteId
-      ? supabase.from("clientes").update(payload).eq("id", clienteId)
-      : supabase.from("clientes").insert(payload);
-    const { error } = await op;
+    const { error, strippedColumns } = await saveClienteWithFallback(payload, clienteId);
     setBusy(false);
     if (error) return toast.error(error.message);
+    if (strippedColumns.length > 0) {
+      toast.warning(`Cliente salvo sem os campos: ${strippedColumns.join(", ")}`);
+    }
     toast.success("Cliente salvo");
     onSaved(); onOpenChange(false);
   };
