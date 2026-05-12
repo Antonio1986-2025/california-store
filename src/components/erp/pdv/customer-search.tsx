@@ -26,15 +26,7 @@ export function CustomerSearch({
       return;
     }
     const t = setTimeout(async () => {
-      const termNorm = term
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase();
-      const { data } = await supabase
-        .from("clientes")
-        .select("id, nome, cpf, saldo_credito")
-        .or(`nome_norm.ilike.%${termNorm}%,cpf.ilike.%${term}%`)
-        .limit(10);
+      const { data } = await supabase.rpc("buscar_clientes", { termo: term });
       setResults(
         (data ?? []).map((c: any) => ({
           id: c.id,
