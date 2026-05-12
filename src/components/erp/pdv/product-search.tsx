@@ -29,8 +29,7 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
           setResults([]);
           return;
         }
-        setResults(
-          (data ?? []).map<ProdutoBusca>((r: any) => ({
+        const mapped: ProdutoBusca[] = (data ?? []).map((r: any) => ({
             variante_id: r.variante_id,
             produto_id: r.produto_id,
             nome: r.nome ?? "Produto",
@@ -41,8 +40,8 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
             qtd_estoque: Number(r.qtd_estoque) || 0,
             foto_url: r.foto_url ?? null,
             codigo_barras: r.codigo_barras ?? null,
-          }))
-        );
+        }));
+        setResults(mapped);
         setError(null);
       } catch (e: any) {
         if (!cancelled) setError(e.message ?? "Erro na busca");
