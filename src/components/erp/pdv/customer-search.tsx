@@ -5,6 +5,39 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { brl, type Cliente } from "@/lib/pdv-types";
 
+const normalizeSearch = (value: string) =>
+  value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+async function searchCustomersFallback(term: string): Promise<Cliente[]> {
+  const termNorm = normalizeSearch(term);
+  const [nameRes, cpfRes] = await Promise.all([
+    supabase
+      .from("clientes")
+      .select("id, nome, cpf, saldo_credito")
+      .ilike("nome_norm", `%${termNorm}%`)
+      .limit(20),
+    supabase
+      .from("clientes")
+      .select("id, nome, cpf, saldo_credito")
+      .ilike("cpf", `%${term}%`)
+      .limit(20),
+  ]);
+
+  if (nameRes.error) throw nameRes.error;
+  if (cpfRes.error) throw cpfRes.error;
+
+  return Array.from(
+    new Map([...(nameRes.data ?? []), ...(cpfRes.data ?? [])].map((row) => [row.id, row])).values()
+  )
+    .slice(0, 20)
+    .map((c: any) => ({
+      id: c.id,
+      nome: c.nome,
+      cpf: c.cpf,
+      saldo_credito: Number(c.saldo_credito) || 0,
+    }));
+}
+
 export function CustomerSearch({
   cliente,
   onSelect,
@@ -26,16 +59,27 @@ export function CustomerSearch({
       return;
     }
     const t = setTimeout(async () => {
-      const { data } = await supabase.rpc("buscar_clientes", { termo: term });
-      setResults(
-        (data ?? []).map((c: any) => ({
-          id: c.id,
-          nome: c.nome,
-          cpf: c.cpf,
-          saldo_credito: Number(c.saldo_credito) || 0,
-        }))
-      );
-      setOpen(true);
+      try {
+        const { data, error } = await supabase.rpc("buscar_clientes", { termo: term });
+
+        if (error?.message.includes("Could not find the function public.buscar_clientes")) {
+          setResults(await searchCustomersFallback(term));
+          setOpen(true);
+          return;
+        }
+
+        setResults(
+          (data ?? []).map((c: any) => ({
+            id: c.id,
+            nome: c.nome,
+            cpf: c.cpf,
+            saldo_credito: Number(c.saldo_credito) || 0,
+          }))
+        );
+        setOpen(true);
+      } catch {
+        setResults([]);
+      }
     }, 250);
     return () => clearTimeout(t);
   }, [q, cliente]);

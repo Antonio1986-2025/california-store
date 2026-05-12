@@ -5,6 +5,68 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { brl, type ProdutoBusca } from "@/lib/pdv-types";
 
+const normalizeSearch = (value: string) =>
+  value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+function mapProductRow(r: any): ProdutoBusca {
+  return {
+    variante_id: r.id ?? r.variante_id,
+    produto_id: r.produto_id ?? r.produtos?.id,
+    nome: r.nome ?? r.produtos?.nome ?? "Produto",
+    sku: r.codigo_barras ?? null,
+    cor: r.cor ?? null,
+    tamanho: r.tamanho ?? null,
+    preco: Number(r.preco_venda) || 0,
+    qtd_estoque: Number(r.qtd_estoque) || 0,
+    foto_url: r.foto_url ?? r.produtos?.foto_url ?? null,
+    codigo_barras: r.codigo_barras ?? null,
+  };
+}
+
+async function searchProductsFallback(term: string): Promise<ProdutoBusca[]> {
+  const termNorm = normalizeSearch(term);
+  const [barcodeRes, productRes] = await Promise.all([
+    supabase
+      .from("produto_variantes")
+      .select(
+        "id, cor, tamanho, preco_venda, qtd_estoque, produto_id, codigo_barras, produtos:produto_id(id, nome, foto_url)"
+      )
+      .ilike("codigo_barras", `%${term}%`)
+      .limit(60),
+    supabase
+      .from("produtos")
+      .select("id")
+      .ilike("nome_norm", `%${termNorm}%`)
+      .or("ativo.is.null,ativo.eq.true")
+      .limit(60),
+  ]);
+
+  if (barcodeRes.error) throw barcodeRes.error;
+  if (productRes.error) throw productRes.error;
+
+  const productIds = (productRes.data ?? []).map((p) => p.id).filter(Boolean);
+  let nameRows: any[] = [];
+
+  if (productIds.length > 0) {
+    const { data, error } = await supabase
+      .from("produto_variantes")
+      .select(
+        "id, cor, tamanho, preco_venda, qtd_estoque, produto_id, codigo_barras, produtos:produto_id(id, nome, foto_url)"
+      )
+      .in("produto_id", productIds)
+      .limit(60);
+
+    if (error) throw error;
+    nameRows = data ?? [];
+  }
+
+  return Array.from(
+    new Map([...(barcodeRes.data ?? []), ...nameRows].map((row: any) => [row.id, row])).values()
+  )
+    .slice(0, 60)
+    .map(mapProductRow);
+}
+
 export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
   const [q, setQ] = useState("");
   const [results, setResults] = useState<ProdutoBusca[]>([]);
@@ -25,22 +87,19 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
         const { data, error: rpcErr } = await supabase.rpc("buscar_produtos", { termo: term });
         if (cancelled) return;
         if (rpcErr) {
+          if (rpcErr.message.includes("Could not find the function public.buscar_produtos")) {
+            const fallbackResults = await searchProductsFallback(term);
+            if (cancelled) return;
+            setResults(fallbackResults);
+            setError(null);
+            return;
+          }
+
           setError(rpcErr.message);
           setResults([]);
           return;
         }
-        const mapped: ProdutoBusca[] = (data ?? []).map((r: any) => ({
-            variante_id: r.variante_id,
-            produto_id: r.produto_id,
-            nome: r.nome ?? "Produto",
-            sku: r.codigo_barras ?? null,
-            cor: r.cor ?? null,
-            tamanho: r.tamanho ?? null,
-            preco: Number(r.preco_venda) || 0,
-            qtd_estoque: Number(r.qtd_estoque) || 0,
-            foto_url: r.foto_url ?? null,
-            codigo_barras: r.codigo_barras ?? null,
-        }));
+        const mapped: ProdutoBusca[] = (data ?? []).map(mapProductRow);
         setResults(mapped);
         setError(null);
       } catch (e: any) {
