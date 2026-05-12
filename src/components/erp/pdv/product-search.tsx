@@ -18,6 +18,10 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
       setError(null);
       return;
     }
+    const termNorm = term
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
     let cancelled = false;
     setLoading(true);
     const t = setTimeout(async () => {
@@ -44,7 +48,7 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
             .select(
               "id, nome, foto_url, produto_variantes(id, cor, tamanho, codigo_barras, preco_venda, qtd_estoque, produto_id)"
             )
-            .ilike("nome", `%${term}%`)
+            .ilike("nome_norm", `%${termNorm}%`)
             .limit(20);
           if (nameErr) {
             setError(nameErr.message);
