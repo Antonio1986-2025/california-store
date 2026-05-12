@@ -18,65 +18,30 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
       setError(null);
       return;
     }
-    const termNorm = term
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
     let cancelled = false;
     setLoading(true);
     const t = setTimeout(async () => {
       try {
-        // 1) Busca variantes por código de barras
-        const { data: byCode, error: codeErr } = await supabase
-          .from("produto_variantes")
-          .select(
-            "id, cor, tamanho, codigo_barras, preco_venda, qtd_estoque, produto_id, produtos:produto_id(id, nome, foto_url)"
-          )
-          .ilike("codigo_barras", `%${term}%`)
-          .limit(40);
+        const { data, error: rpcErr } = await supabase.rpc("buscar_produtos", { termo: term });
         if (cancelled) return;
-        if (codeErr) {
-          setError(codeErr.message);
+        if (rpcErr) {
+          setError(rpcErr.message);
           setResults([]);
           return;
         }
-        let rows: any[] = byCode ?? [];
-        // 2) Se não achou por código, busca por nome do produto
-        if (rows.length === 0) {
-          const { data: byName, error: nameErr } = await supabase
-            .from("produtos")
-            .select(
-              "id, nome, foto_url, produto_variantes(id, cor, tamanho, codigo_barras, preco_venda, qtd_estoque, produto_id)"
-            )
-            .ilike("nome_norm", `%${termNorm}%`)
-            .limit(20);
-          if (nameErr) {
-            setError(nameErr.message);
-            setResults([]);
-            return;
-          }
-          const flat: any[] = [];
-          (byName ?? []).forEach((p: any) => {
-            (p.produto_variantes ?? []).forEach((v: any) =>
-              flat.push({ ...v, produtos: { id: p.id, nome: p.nome, foto_url: p.foto_url ?? null } })
-            );
-          });
-          rows = flat;
-        }
-        setResults(
-          rows.map<ProdutoBusca>((r) => ({
-            variante_id: r.id,
-            produto_id: r.produto_id ?? r.produtos?.id,
-            nome: r.produtos?.nome ?? "Produto",
+        const mapped: ProdutoBusca[] = (data ?? []).map((r: any) => ({
+            variante_id: r.variante_id,
+            produto_id: r.produto_id,
+            nome: r.nome ?? "Produto",
             sku: r.codigo_barras ?? null,
             cor: r.cor ?? null,
             tamanho: r.tamanho ?? null,
             preco: Number(r.preco_venda) || 0,
             qtd_estoque: Number(r.qtd_estoque) || 0,
-            foto_url: r.produtos?.foto_url ?? null,
+            foto_url: r.foto_url ?? null,
             codigo_barras: r.codigo_barras ?? null,
-          }))
-        );
+        }));
+        setResults(mapped);
         setError(null);
       } catch (e: any) {
         if (!cancelled) setError(e.message ?? "Erro na busca");
