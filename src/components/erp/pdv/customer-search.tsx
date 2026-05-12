@@ -5,16 +5,12 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { brl, type Cliente } from "@/lib/pdv-types";
 
-const normalizeSearch = (value: string) =>
-  value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
 async function searchCustomersFallback(term: string): Promise<Cliente[]> {
-  const termNorm = normalizeSearch(term);
   const [nameRes, cpfRes] = await Promise.all([
     supabase
       .from("clientes")
       .select("id, nome, cpf, saldo_credito")
-      .ilike("nome_norm", `%${termNorm}%`)
+      .ilike("nome", `%${term}%`)
       .limit(20),
     supabase
       .from("clientes")
@@ -62,7 +58,7 @@ export function CustomerSearch({
       try {
         const { data, error } = await supabase.rpc("buscar_clientes", { termo: term });
 
-        if (error?.message.includes("Could not find the function public.buscar_clientes")) {
+        if (error) {
           setResults(await searchCustomersFallback(term));
           setOpen(true);
           return;
