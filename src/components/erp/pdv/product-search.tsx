@@ -24,7 +24,6 @@ function mapProductRow(r: any): ProdutoBusca {
 }
 
 async function searchProductsFallback(term: string): Promise<ProdutoBusca[]> {
-  const termNorm = normalizeSearch(term);
   const [barcodeRes, productRes] = await Promise.all([
     supabase
       .from("produto_variantes")
@@ -36,7 +35,7 @@ async function searchProductsFallback(term: string): Promise<ProdutoBusca[]> {
     supabase
       .from("produtos")
       .select("id")
-      .ilike("nome_norm", `%${termNorm}%`)
+      .ilike("nome", `%${term}%`)
       .or("ativo.is.null,ativo.eq.true")
       .limit(60),
   ]);
@@ -87,16 +86,10 @@ export function ProductSearch({ onAdd }: { onAdd: (p: ProdutoBusca) => void }) {
         const { data, error: rpcErr } = await supabase.rpc("buscar_produtos", { termo: term });
         if (cancelled) return;
         if (rpcErr) {
-          if (rpcErr.message.includes("Could not find the function public.buscar_produtos")) {
-            const fallbackResults = await searchProductsFallback(term);
-            if (cancelled) return;
-            setResults(fallbackResults);
-            setError(null);
-            return;
-          }
-
-          setError(rpcErr.message);
-          setResults([]);
+          const fallbackResults = await searchProductsFallback(term);
+          if (cancelled) return;
+          setResults(fallbackResults);
+          setError(null);
           return;
         }
         const mapped: ProdutoBusca[] = (data ?? []).map(mapProductRow);
