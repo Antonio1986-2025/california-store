@@ -134,7 +134,7 @@ function DashboardPage() {
             return (data ?? []).reduce((a: number, r: any) => a + (Number(r.total) || 0), 0);
           } catch { return 0; }
         })(),
-        safeSum("produto_variantes", "estoque"),
+        safeSum("produto_variantes", "qtd_estoque"),
         safeCount("consignacoes", { eq: { col: "status", v: "aberta" } }),
       ]);
       const pct = (a: number, b: number) => (b > 0 ? ((a - b) / b) * 100 : null);
