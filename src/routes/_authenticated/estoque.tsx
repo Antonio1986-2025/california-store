@@ -11,6 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Boxes, AlertTriangle, XCircle, DollarSign, Plus } from "lucide-react";
 import { AjusteModal } from "@/components/erp/estoque/ajuste-modal";
 
+const normalizeSearch = (value: string) =>
+  (value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
 export const Route = createFileRoute("/_authenticated/estoque")({
   component: Page,
 });
@@ -60,14 +63,14 @@ function Page() {
   }, [vars]);
 
   const filtered = useMemo(() => {
-    const t = busca.toLowerCase();
+    const t = normalizeSearch(busca);
     return vars.filter((v) => {
       const min = Number(v.produtos?.estoque_minimo ?? 0);
       const q = Number(v.qtd_estoque ?? 0);
       if (filtro === "criticos" && !(q > 0 && q <= min)) return false;
       if (filtro === "zerados" && q > 0) return false;
       if (t) {
-        const hay = `${v.produtos?.nome ?? ""} ${v.codigo_barras ?? ""}`.toLowerCase();
+        const hay = normalizeSearch(`${v.produtos?.nome ?? ""} ${v.codigo_barras ?? ""}`);
         if (!hay.includes(t)) return false;
       }
       return true;
