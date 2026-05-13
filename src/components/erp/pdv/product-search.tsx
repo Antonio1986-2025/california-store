@@ -24,6 +24,7 @@ function mapProductRow(r: any): ProdutoBusca {
 }
 
 async function searchProductsFallback(term: string): Promise<ProdutoBusca[]> {
+  const normalizedTerm = normalizeSearch(term);
   const [barcodeRes, productRes] = await Promise.all([
     supabase
       .from("produto_variantes")
@@ -35,7 +36,7 @@ async function searchProductsFallback(term: string): Promise<ProdutoBusca[]> {
     supabase
       .from("produtos")
       .select("id")
-      .ilike("nome", `%${term}%`)
+      .like("nome_norm", `%${normalizedTerm}%`)
       .or("ativo.is.null,ativo.eq.true")
       .limit(60),
   ]);
