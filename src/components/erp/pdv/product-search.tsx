@@ -25,44 +25,26 @@ function mapProductRow(r: any): ProdutoBusca {
 
 async function searchProductsFallback(term: string): Promise<ProdutoBusca[]> {
   const normalizedTerm = normalizeSearch(term);
-  const [barcodeRes, productRes] = await Promise.all([
-    supabase
-      .from("produto_variantes")
-      .select(
-        "id, cor, tamanho, preco_venda, qtd_estoque, produto_id, codigo_barras, produtos:produto_id(id, nome, foto_url)"
-      )
-      .ilike("codigo_barras", `%${term}%`)
-      .limit(60),
-    supabase
-      .from("produtos")
-      .select("id")
-      .like("nome_norm", `%${normalizedTerm}%`)
-      .or("ativo.is.null,ativo.eq.true")
-      .limit(60),
-  ]);
+  const { data, error } = await supabase
+    .from("produto_variantes")
+    .select(
+      "id, cor, tamanho, preco_venda, qtd_estoque, produto_id, codigo_barras, produtos:produto_id(id, nome, foto_url, ativo)"
+    )
+    .limit(240);
 
-  if (barcodeRes.error) throw barcodeRes.error;
-  if (productRes.error) throw productRes.error;
+  if (error) throw error;
 
-  const productIds = (productRes.data ?? []).map((p) => p.id).filter(Boolean);
-  let nameRows: any[] = [];
+  return (data ?? [])
+    .filter((row: any) => {
+      const ativo = row.produtos?.ativo;
+      if (ativo === false) return false;
 
-  if (productIds.length > 0) {
-    const { data, error } = await supabase
-      .from("produto_variantes")
-      .select(
-        "id, cor, tamanho, preco_venda, qtd_estoque, produto_id, codigo_barras, produtos:produto_id(id, nome, foto_url)"
-      )
-      .in("produto_id", productIds)
-      .limit(60);
+      const normalizedHaystack = normalizeSearch(
+        `${row.produtos?.nome ?? ""} ${row.codigo_barras ?? ""}`
+      );
 
-    if (error) throw error;
-    nameRows = data ?? [];
-  }
-
-  return Array.from(
-    new Map([...(barcodeRes.data ?? []), ...nameRows].map((row: any) => [row.id, row])).values()
-  )
+      return normalizedHaystack.includes(normalizedTerm);
+    })
     .slice(0, 60)
     .map(mapProductRow);
 }
