@@ -44,7 +44,10 @@ function PdvPage() {
     [descontoGeral, descontoModo, subtotal]
   );
   const total = Math.max(0, subtotal - descontoEmReais);
-  const troco = metodo === "dinheiro" ? Math.max(0, valorRecebido - total) : 0;
+  const troco =
+    metodo === "dinheiro"
+      ? Math.max(0, (valorRecebido > 0 ? valorRecebido : total) - total)
+      : 0;
 
   function addItem(p: ProdutoBusca) {
     setItens((prev) => {
@@ -137,8 +140,9 @@ function PdvPage() {
 
   function buildPagamento(): Pagamento | null {
     if (metodo === "dinheiro") {
-      if (valorRecebido < total) return null;
-      return { metodo: "dinheiro", valor: total, valor_recebido: valorRecebido };
+      const recebido = valorRecebido > 0 ? valorRecebido : total;
+      if (recebido < total) return null;
+      return { metodo: "dinheiro", valor: total, valor_recebido: recebido };
     }
     if (metodo === "credito") return { metodo: "credito", valor: total, parcelas };
     if (metodo === "credito_cliente") {
