@@ -19,7 +19,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -397,108 +396,96 @@ function PdvPage() {
         )}
       </div>
 
-      {/* Totais + pagamento */}
-      <div className="border-t border-slate-100 bg-slate-50/60 px-4 py-3 space-y-3 shrink-0">
-        <div className="rounded-lg bg-white border border-slate-200 px-3 py-2 space-y-1.5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-500">Subtotal</span>
-            <span className="font-medium tabular-nums text-slate-900">
-              {brl(subtotal)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-slate-500">Desconto</span>
-            <div className="flex items-center gap-1">
+    </div>
+  );
+
+  const FooterPagamento = (
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 px-4 py-3 flex items-center gap-4 flex-wrap">
+      {/* Totais */}
+      <div className="flex items-center gap-4 shrink-0">
+        <div className="text-xs text-slate-500">
+          Subtotal:{" "}
+          <span className="font-semibold text-slate-900 tabular-nums">{brl(subtotal)}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-slate-500">Desc:</span>
+          <Input
+            type="number"
+            step="0.01"
+            min={0}
+            value={descontoGeral || ""}
+            onChange={(e) => setDescontoGeral(Number(e.target.value) || 0)}
+            className="h-8 w-20 text-right text-xs"
+          />
+          <button
+            onClick={() =>
+              setDescontoModo(descontoModo === "valor" ? "percentual" : "valor")
+            }
+            className="h-8 px-2 rounded-md border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            {descontoModo === "valor" ? "R$" : "%"}
+          </button>
+        </div>
+        <div className="border-l border-slate-200 pl-4">
+          <p className="text-[10px] text-slate-500 uppercase leading-none">Total</p>
+          <p className="text-2xl font-extrabold tabular-nums text-emerald-700 leading-tight">
+            {brl(total)}
+          </p>
+        </div>
+      </div>
+
+      {/* Métodos */}
+      <div className="flex gap-1 flex-1 min-w-[280px]">
+        {PAGAMENTO_OPCOES.map((opt) => {
+          const active = metodo === opt.id;
+          return (
+            <button
+              key={opt.id}
+              onClick={() => setMetodo(opt.id)}
+              className={
+                "flex-1 flex flex-col items-center justify-center gap-0.5 rounded-md py-1.5 px-1 text-[10px] font-semibold transition leading-tight " +
+                (active
+                  ? "bg-[#1E3A5F] text-white shadow-md"
+                  : "bg-white border border-slate-200 text-slate-600 hover:border-[#1E3A5F]/40 hover:text-[#1E3A5F]")
+              }
+            >
+              <span className="text-sm leading-none">{opt.emoji}</span>
+              <span className="leading-tight text-center">{opt.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Conteúdo do método */}
+      <div className="min-w-[180px]">
+        {metodo === "dinheiro" && (
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <Label className="text-[10px] text-slate-500 uppercase">Recebido</Label>
               <Input
                 type="number"
                 step="0.01"
-                min={0}
-                value={descontoGeral || ""}
-                onChange={(e) => setDescontoGeral(Number(e.target.value) || 0)}
-                className="h-7 w-20 text-right text-xs"
+                value={valorRecebido || ""}
+                onChange={(e) => setValorRecebido(Number(e.target.value) || 0)}
+                placeholder={brl(total)}
+                className="h-8 text-sm font-semibold mt-0.5"
               />
-              <button
-                onClick={() =>
-                  setDescontoModo(descontoModo === "valor" ? "percentual" : "valor")
-                }
-                className="h-7 px-2 rounded-md border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                {descontoModo === "valor" ? "R$" : "%"}
-              </button>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] text-slate-500 uppercase leading-none">Troco</p>
+              <p className="text-sm font-bold text-emerald-700 tabular-nums">
+                {brl(troco)}
+              </p>
             </div>
           </div>
-          <div className="h-px bg-slate-100" />
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-slate-900">Total</span>
-            <span className="text-xl font-extrabold tabular-nums text-emerald-700">
-              {brl(total)}
-            </span>
-          </div>
-        </div>
-
-        {/* Métodos de pagamento */}
-        <div className="grid grid-cols-5 gap-1">
-          {PAGAMENTO_OPCOES.map((opt) => {
-            const active = metodo === opt.id;
-            return (
-              <button
-                key={opt.id}
-                onClick={() => setMetodo(opt.id)}
-                className={
-                  "flex flex-col items-center justify-center gap-0.5 rounded-md py-1.5 px-1 text-[9px] font-semibold transition leading-tight " +
-                  (active
-                    ? "bg-[#1E3A5F] text-white shadow-md"
-                    : "bg-white border border-slate-200 text-slate-600 hover:border-[#1E3A5F]/40 hover:text-[#1E3A5F]")
-                }
-              >
-                <span className="text-sm leading-none">{opt.emoji}</span>
-                <span className="leading-tight text-center">{opt.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Conteúdo do método */}
-        <Tabs value={metodo} className="w-full">
-          <TabsList className="hidden">
-            {PAGAMENTO_OPCOES.map((o) => (
-              <TabsTrigger key={o.id} value={o.id}>
-                {o.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          <TabsContent value="dinheiro" className="mt-0">
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
-                <Label className="text-[10px] text-slate-500 uppercase">Valor recebido</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={valorRecebido || ""}
-                  onChange={(e) => setValorRecebido(Number(e.target.value) || 0)}
-                  placeholder={brl(total)}
-                  className="h-9 text-sm font-semibold mt-0.5"
-                />
-              </div>
-              <div className="text-right">
-                <p className="text-[10px] text-slate-500 uppercase">Troco</p>
-                <p className="text-base font-bold text-emerald-700 tabular-nums">
-                  {brl(troco)}
-                </p>
-              </div>
-            </div>
-          </TabsContent>
-          <TabsContent value="debito" className="mt-0">
-            <p className="text-xs text-slate-500">
-              Confirme o pagamento na maquininha antes de finalizar.
-            </p>
-          </TabsContent>
-          <TabsContent value="credito" className="mt-0">
+        )}
+        {metodo === "credito" && (
+          <div>
             <Label className="text-[10px] text-slate-500 uppercase">Parcelas</Label>
             <select
               value={parcelas}
               onChange={(e) => setParcelas(Number(e.target.value))}
-              className="w-full h-9 rounded-md border border-slate-200 bg-white px-3 text-sm font-medium mt-0.5"
+              className="w-full h-8 rounded-md border border-slate-200 bg-white px-2 text-xs font-medium mt-0.5"
             >
               {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
                 <option key={n} value={n}>
@@ -506,65 +493,66 @@ function PdvPage() {
                 </option>
               ))}
             </select>
-          </TabsContent>
-          <TabsContent value="pix" className="mt-0">
-            <p className="text-xs text-slate-500">
-              Confirme o recebimento do PIX antes de finalizar.
+          </div>
+        )}
+        {(metodo === "debito" || metodo === "pix") && (
+          <p className="text-[11px] text-slate-500">
+            Confirme o pagamento antes de finalizar.
+          </p>
+        )}
+        {metodo === "credito_cliente" && (
+          cliente ? (
+            <p className="text-[11px] text-slate-600">
+              Saldo:{" "}
+              <span className="font-bold text-emerald-700">
+                {brl(cliente.saldo_credito)}
+              </span>
+              {cliente.saldo_credito < total && (
+                <span className="text-red-600 ml-1 font-semibold">(insuficiente)</span>
+              )}
             </p>
-          </TabsContent>
-          <TabsContent value="credito_cliente" className="mt-0">
-            {cliente ? (
-              <p className="text-xs text-slate-600">
-                Saldo disponível:{" "}
-                <span className="font-bold text-emerald-700">
-                  {brl(cliente.saldo_credito)}
-                </span>
-                {cliente.saldo_credito < total && (
-                  <span className="text-red-600 ml-1 font-semibold">(insuficiente)</span>
-                )}
-              </p>
-            ) : (
-              <p className="text-xs text-red-600 font-medium">
-                Selecione um cliente acima.
-              </p>
-            )}
-          </TabsContent>
-        </Tabs>
+          ) : (
+            <p className="text-[11px] text-red-600 font-medium">
+              Selecione um cliente.
+            </p>
+          )
+        )}
+      </div>
 
-        {/* Ações */}
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={cancelar}
-            disabled={finalizing}
-            className="h-12 px-3 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300 font-semibold text-sm"
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={finalizar}
-            disabled={finalizing || itens.length === 0}
-            className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold shadow-lg shadow-emerald-600/20 disabled:opacity-50"
-          >
-            {finalizing ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Check className="h-4 w-4 mr-2" />
-            )}
-            FINALIZAR VENDA
-          </Button>
-        </div>
+      {/* Ações */}
+      <div className="flex gap-2 shrink-0">
+        <Button
+          variant="outline"
+          onClick={cancelar}
+          disabled={finalizing}
+          className="h-12 px-3 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300 font-semibold text-sm"
+        >
+          Cancelar
+        </Button>
+        <Button
+          onClick={finalizar}
+          disabled={finalizing || itens.length === 0}
+          className="h-12 px-6 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold shadow-lg shadow-emerald-600/20 disabled:opacity-50"
+        >
+          {finalizing ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Check className="h-4 w-4 mr-2" />
+          )}
+          FINALIZAR
+        </Button>
       </div>
     </div>
   );
 
   return (
-    <div className="h-[calc(100vh-7rem)] overflow-hidden">
-      {/* Desktop: 2 colunas */}
-      <div className="hidden lg:grid lg:grid-cols-[1fr_1.1fr] gap-4 h-full">
+    <div className="h-[calc(100vh-7rem)] overflow-hidden flex flex-col gap-3">
+      {/* Desktop: 2 colunas em cima + footer */}
+      <div className="hidden lg:grid lg:grid-cols-[1fr_1fr] gap-4 flex-1 min-h-0">
         {ProdutosPanel}
         {CarrinhoPanel}
       </div>
+      <div className="hidden lg:block shrink-0">{FooterPagamento}</div>
 
       {/* Mobile: tabs */}
       <div className="lg:hidden h-full flex flex-col">
@@ -597,9 +585,10 @@ function PdvPage() {
             )}
           </button>
         </div>
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden min-h-0">
           {mobileTab === "produtos" ? ProdutosPanel : CarrinhoPanel}
         </div>
+        <div className="shrink-0 mt-3">{FooterPagamento}</div>
       </div>
 
       <ReceiptModal data={receipt} onClose={() => setReceipt(null)} />
