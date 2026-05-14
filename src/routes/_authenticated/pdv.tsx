@@ -137,8 +137,9 @@ function PdvPage() {
 
   function buildPagamento(): Pagamento | null {
     if (metodo === "dinheiro") {
-      if (valorRecebido < total) return null;
-      return { metodo: "dinheiro", valor: total, valor_recebido: valorRecebido };
+      const recebido = valorRecebido > 0 ? valorRecebido : total;
+      if (recebido < total) return null;
+      return { metodo: "dinheiro", valor: total, valor_recebido: recebido };
     }
     if (metodo === "credito") return { metodo: "credito", valor: total, parcelas };
     if (metodo === "credito_cliente") {
