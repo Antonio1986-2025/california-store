@@ -278,13 +278,14 @@ function PdvPage() {
 
   const ProdutosPanel = (
     <div className="h-full bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
-      <div className="p-5 border-b border-slate-100">
+      <div className="px-5 pt-5 pb-2 shrink-0">
         <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
           Produtos
         </h2>
+      </div>
+      <div className="flex-1 overflow-y-auto px-5 pb-5">
         <ProductSearch onAdd={addItem} onScan={() => setScannerOpen(true)} />
       </div>
-      {/* a busca já renderiza a grid; nada mais aqui */}
     </div>
   );
 
