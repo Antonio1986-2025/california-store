@@ -296,18 +296,18 @@ function PdvPage() {
   const CarrinhoPanel = (
     <div className="h-full bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <ShoppingCart className="h-5 w-5 text-[#1E3A5F]" />
-          <h2 className="font-bold text-slate-900">Carrinho</h2>
-          <span className="ml-1 inline-flex items-center justify-center min-w-6 h-6 px-2 rounded-full bg-[#1E3A5F] text-white text-xs font-bold">
+          <ShoppingCart className="h-4 w-4 text-[#1E3A5F]" />
+          <h2 className="text-sm font-bold text-slate-900">Carrinho</h2>
+          <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-[#1E3A5F] text-white text-[10px] font-bold">
             {itens.length}
           </span>
         </div>
         {itens.length > 0 && (
           <button
             onClick={cancelar}
-            className="text-xs text-slate-500 hover:text-red-600 transition"
+            className="text-[11px] text-slate-500 hover:text-red-600 transition"
           >
             Limpar
           </button>
@@ -315,7 +315,7 @@ function PdvPage() {
       </div>
 
       {/* Cliente */}
-      <div className="px-5 py-3 border-b border-slate-100">
+      <div className="px-3 py-2 border-b border-slate-100">
         <CustomerSearch
           cliente={cliente}
           onSelect={setCliente}
