@@ -88,21 +88,21 @@ export function CustomerSearch({
       .map((s) => s[0]?.toUpperCase())
       .join("");
     return (
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-[#1E3A5F]/20 bg-[#1E3A5F]/5 px-3 py-2.5">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="h-10 w-10 shrink-0 rounded-full bg-[#1E3A5F] text-white text-sm font-bold flex items-center justify-center">
+      <div className="flex items-center justify-between gap-2 rounded-lg border border-[#1E3A5F]/20 bg-[#1E3A5F]/5 px-2 py-1.5">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="h-7 w-7 shrink-0 rounded-full bg-[#1E3A5F] text-white text-[11px] font-bold flex items-center justify-center">
             {initials || "?"}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold truncate text-slate-900">{cliente.nome}</p>
-            <p className="text-xs text-slate-500">
-              {cliente.cpf ?? "Sem CPF"} · Crédito:{" "}
+            <p className="text-xs font-semibold truncate text-slate-900 leading-tight">{cliente.nome}</p>
+            <p className="text-[10px] text-slate-500 leading-tight">
+              {cliente.cpf ?? "Sem CPF"} ·{" "}
               <span className="font-semibold text-emerald-700">{brl(cliente.saldo_credito)}</span>
             </p>
           </div>
         </div>
-        <Button variant="ghost" size="icon" onClick={onClear} className="h-8 w-8 shrink-0">
-          <X className="h-4 w-4" />
+        <Button variant="ghost" size="icon" onClick={onClear} className="h-6 w-6 shrink-0">
+          <X className="h-3.5 w-3.5" />
         </Button>
       </div>
     );
@@ -116,10 +116,9 @@ export function CustomerSearch({
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => setOpen(true)}
-          placeholder="Buscar cliente por nome ou CPF (opcional)"
-          className="pl-9 h-10 rounded-lg border-slate-200 bg-white"
+          placeholder="Cliente (opcional)"
+          className="pl-9 h-8 text-xs rounded-md border-slate-200 bg-white"
         />
-        <UserPlus className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       </div>
       {open && results.length > 0 && (
         <div className="absolute z-20 mt-1 w-full rounded-md border bg-popover shadow-md max-h-64 overflow-y-auto">
@@ -140,11 +139,6 @@ export function CustomerSearch({
             </button>
           ))}
         </div>
-      )}
-      {!cliente && (
-        <p className="text-xs text-muted-foreground mt-1">
-          Deixe em branco para "Venda sem cadastro".
-        </p>
       )}
     </div>
   );
