@@ -229,7 +229,6 @@ function PdvPage() {
         variante_id: i.variante_id,
         quantidade: i.qtd,
         preco_unitario: i.preco_unit,
-        subtotal: i.qtd * i.preco_unit - i.desconto,
       }));
       const { error: itensErr } = await supabase.from("venda_itens").insert(itensRows);
       if (itensErr) throw itensErr;
