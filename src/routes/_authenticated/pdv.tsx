@@ -202,6 +202,15 @@ function PdvPage() {
     }
     setFinalizing(true);
     try {
+      let funcionarioId: string | null = null;
+      if (user?.id) {
+        const { data: func } = await supabase
+          .from("funcionarios")
+          .select("id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        funcionarioId = func?.id ?? null;
+      }
       const { data: vendaData, error: vendaErr } = await supabase
         .from("vendas")
         .insert({
@@ -209,7 +218,7 @@ function PdvPage() {
           subtotal,
           desconto: descontoEmReais,
           total,
-          funcionario_id: user?.id ?? null,
+          funcionario_id: funcionarioId,
         })
         .select("id")
         .single();
