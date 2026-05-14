@@ -315,7 +315,7 @@ function PdvPage() {
       </div>
 
       {/* Itens */}
-      <div className="flex-1 overflow-y-auto px-5 py-3">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-3 min-w-0">
         {itens.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center py-12">
             <div className="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center mb-3">
@@ -331,66 +331,55 @@ function PdvPage() {
             {itens.map((i) => {
               const sub = i.qtd * i.preco_unit - i.desconto;
               return (
-                <div key={i.variante_id} className="py-3 first:pt-0 last:pb-0">
-                  <div className="flex gap-3">
-                    <div className="h-10 w-10 shrink-0 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                      <Package className="h-4 w-4 text-slate-400" />
+                <div key={i.variante_id} className="py-2.5 first:pt-0 last:pb-0 min-w-0">
+                  <div className="flex items-start justify-between gap-2 min-w-0">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-slate-900 truncate">
+                        {i.nome}
+                      </p>
+                      <p className="text-[11px] text-slate-500 truncate">
+                        {i.variante_label || "—"} · {brl(i.preco_unit)}
+                      </p>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-slate-900 truncate">
-                            {i.nome}
-                          </p>
-                          <p className="text-xs text-slate-500 truncate">
-                            {i.variante_label || "—"} · {brl(i.preco_unit)}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => removeItem(i.variante_id)}
-                          className="h-7 w-7 shrink-0 rounded-md flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600 transition"
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                      <div className="flex items-center justify-between gap-2 mt-2">
-                        <div className="inline-flex items-center rounded-full bg-slate-100 p-0.5">
-                          <button
-                            onClick={() => setQtd(i.variante_id, -1)}
-                            className="h-7 w-7 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-700 hover:text-[#1E3A5F] transition"
-                          >
-                            <Minus className="h-3 w-3" />
-                          </button>
-                          <span className="w-8 text-center text-sm font-semibold tabular-nums">
-                            {i.qtd}
-                          </span>
-                          <button
-                            onClick={() => setQtd(i.variante_id, +1)}
-                            className="h-7 w-7 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-700 hover:text-[#1E3A5F] transition"
-                          >
-                            <Plus className="h-3 w-3" />
-                          </button>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Label className="text-[10px] text-slate-500 uppercase">
-                            Desc
-                          </Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            min={0}
-                            value={i.desconto || ""}
-                            onChange={(e) =>
-                              setDescItem(i.variante_id, Number(e.target.value) || 0)
-                            }
-                            className="h-7 w-16 text-xs px-2 rounded-md"
-                          />
-                        </div>
-                        <span className="text-sm font-bold text-slate-900 tabular-nums">
-                          {brl(sub)}
-                        </span>
-                      </div>
+                    <button
+                      onClick={() => removeItem(i.variante_id)}
+                      className="h-6 w-6 shrink-0 rounded-md flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600 transition"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 mt-2 min-w-0">
+                    <div className="inline-flex items-center rounded-full bg-slate-100 p-0.5 shrink-0">
+                      <button
+                        onClick={() => setQtd(i.variante_id, -1)}
+                        className="h-6 w-6 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-700 hover:text-[#1E3A5F] transition"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </button>
+                      <span className="w-7 text-center text-xs font-semibold tabular-nums">
+                        {i.qtd}
+                      </span>
+                      <button
+                        onClick={() => setQtd(i.variante_id, +1)}
+                        className="h-6 w-6 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-700 hover:text-[#1E3A5F] transition"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </button>
                     </div>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min={0}
+                      value={i.desconto || ""}
+                      onChange={(e) =>
+                        setDescItem(i.variante_id, Number(e.target.value) || 0)
+                      }
+                      placeholder="Desc"
+                      className="h-6 w-14 text-[11px] px-1.5 rounded-md shrink-0"
+                    />
+                    <span className="text-sm font-bold text-slate-900 tabular-nums truncate">
+                      {brl(sub)}
+                    </span>
                   </div>
                 </div>
               );
