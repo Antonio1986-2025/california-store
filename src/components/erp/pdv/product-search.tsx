@@ -135,7 +135,7 @@ export function ProductSearch({
           Nenhum produto encontrado.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="flex flex-col divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white overflow-hidden">
           {results.map((p) => {
             const sem = p.qtd_estoque <= 0;
             return (
@@ -144,48 +144,39 @@ export function ProductSearch({
                 disabled={sem}
                 onClick={() => onAdd(p)}
                 className={
-                  "group relative text-left rounded-xl border bg-white p-3 transition-all duration-150 " +
+                  "group flex items-center gap-3 text-left px-3 py-2 transition-colors " +
                   (sem
-                    ? "opacity-50 cursor-not-allowed border-slate-200"
-                    : "border-slate-200 hover:border-[#1E3A5F] hover:shadow-md active:scale-[0.98] cursor-pointer shadow-sm")
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-slate-50 cursor-pointer")
                 }
               >
-                <span
-                  className={
-                    "absolute top-2 right-2 z-10 text-[10px] font-bold px-2 py-0.5 rounded-full " +
-                    (sem
-                      ? "bg-red-100 text-red-700"
-                      : "bg-emerald-100 text-emerald-700")
-                  }
-                >
-                  {sem ? "ESGOTADO" : `${p.qtd_estoque} un.`}
-                </span>
-
-                <div className="flex gap-3">
-                  <div className="h-20 w-20 shrink-0 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden">
-                    {p.foto_url ? (
-                      <img
-                        src={p.foto_url}
-                        alt={p.nome}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <Shirt className="h-8 w-8 text-slate-400" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0 pt-0.5">
-                    <p className="text-sm font-bold text-slate-900 line-clamp-2 leading-tight pr-12">
-                      {p.nome}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1 truncate">
-                      {[p.cor, p.tamanho].filter(Boolean).join(" · ") ||
-                        p.sku ||
-                        "—"}
-                    </p>
-                    <p className="text-base font-bold text-emerald-700 mt-2 tabular-nums">
-                      {brl(p.preco)}
-                    </p>
-                  </div>
+                <div className="h-11 w-11 shrink-0 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden">
+                  {p.foto_url ? (
+                    <img src={p.foto_url} alt={p.nome} className="h-full w-full object-cover" />
+                  ) : (
+                    <Shirt className="h-5 w-5 text-slate-400" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-slate-900 truncate leading-tight">
+                    {p.nome}
+                  </p>
+                  <p className="text-[11px] text-slate-500 truncate leading-tight">
+                    {[p.cor, p.tamanho].filter(Boolean).join(" · ") || p.sku || "—"}
+                  </p>
+                </div>
+                <div className="flex flex-col items-end shrink-0 gap-0.5">
+                  <span className="text-sm font-bold text-emerald-700 tabular-nums leading-none">
+                    {brl(p.preco)}
+                  </span>
+                  <span
+                    className={
+                      "text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none " +
+                      (sem ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700")
+                    }
+                  >
+                    {sem ? "ESGOTADO" : `${p.qtd_estoque} un.`}
+                  </span>
                 </div>
               </button>
             );

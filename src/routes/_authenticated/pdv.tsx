@@ -561,7 +561,7 @@ function PdvPage() {
   return (
     <div className="h-[calc(100vh-7rem)] overflow-hidden">
       {/* Desktop: 2 colunas */}
-      <div className="hidden lg:grid lg:grid-cols-[1.5fr_1fr] gap-4 h-full">
+      <div className="hidden lg:grid lg:grid-cols-[1fr_1.1fr] gap-4 h-full">
         {ProdutosPanel}
         {CarrinhoPanel}
       </div>
