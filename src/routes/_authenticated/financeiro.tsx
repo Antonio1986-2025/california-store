@@ -48,8 +48,17 @@ function Caixa() {
 
   useEffect(() => {
     if (!user?.id) return;
-    supabase.from("funcionarios").select("id").eq("user_id", user.id).maybeSingle()
-      .then(({ data }) => setFuncionarioId(data?.id ?? null));
+    (async () => {
+      const { data } = await supabase.from("funcionarios").select("id")
+        .eq("user_id", user.id).maybeSingle();
+      if (data?.id) { setFuncionarioId(data.id); return; }
+      const nome = user.email?.split("@")[0] ?? "Usuário";
+      const { data: novo, error } = await supabase.from("funcionarios").insert({
+        user_id: user.id, nome, perfil: "admin", ativo: true, comissao_pct: 0,
+      }).select("id").single();
+      if (error) { toast.error("Não foi possível vincular funcionário: " + error.message); return; }
+      setFuncionarioId(novo.id);
+    })();
   }, [user?.id]);
 
   const load = async () => {
