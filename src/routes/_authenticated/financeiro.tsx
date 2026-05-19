@@ -44,6 +44,13 @@ function Caixa() {
   const [openMov, setOpenMov] = useState<"sangria" | "suprimento" | null>(null);
   const [valor, setValor] = useState(0);
   const [desc, setDesc] = useState("");
+  const [funcionarioId, setFuncionarioId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase.from("funcionarios").select("id").eq("user_id", user.id).maybeSingle()
+      .then(({ data }) => setFuncionarioId(data?.id ?? null));
+  }, [user?.id]);
 
   const load = async () => {
     const { data: c } = await supabase.from("caixa_sessoes").select("*")
@@ -55,7 +62,7 @@ function Caixa() {
         .eq("sessao_id", c.id).order("criado_em", { ascending: false });
       setMovs(m ?? []);
       const ini = c.abertura_em;
-      const { data: pg } = await supabase.from("pagamentos").select("forma, valor, vendas!inner(created_at)").gte("vendas.created_at", ini);
+      const { data: pg } = await supabase.from("pagamentos").select("forma, valor, vendas!inner(criado_em)").gte("vendas.criado_em", ini);
       setPagamentos(pg ?? []);
     } else {
       setMovs([]); setPagamentos([]);
@@ -75,15 +82,16 @@ function Caixa() {
   const saldoFinal = Number(caixa?.saldo_inicial ?? 0) + totalDinheiro + totalSupr - totalSangria;
 
   const abrir = async () => {
+    if (!funcionarioId) return toast.error("Usuário sem cadastro de funcionário vinculado.");
     const { data: ses, error } = await supabase.from("caixa_sessoes").insert({
-      saldo_inicial: valor, funcionario_id: user?.id ?? null,
+      saldo_inicial: valor, funcionario_id: funcionarioId,
       abertura_em: new Date().toISOString(), status: "aberta",
     }).select("id").single();
     if (error) return toast.error(error.message);
     if (ses) {
       await supabase.from("caixa_movimentos").insert({
         sessao_id: ses.id, tipo: "abertura", valor,
-        descricao: "Abertura de caixa", funcionario_id: user?.id ?? null,
+        descricao: "Abertura de caixa", funcionario_id: funcionarioId,
       });
     }
     toast.success("Caixa aberto"); setOpenAbrir(false); setValor(0); load();
@@ -97,7 +105,7 @@ function Caixa() {
     if (error) return toast.error(error.message);
     await supabase.from("caixa_movimentos").insert({
       sessao_id: caixa.id, tipo: "fechamento", valor: saldoFinal,
-      descricao: "Fechamento de caixa", funcionario_id: user?.id ?? null,
+      descricao: "Fechamento de caixa", funcionario_id: funcionarioId,
     });
     toast.success(`Caixa fechado. Saldo: ${brl(saldoFinal)}`); load();
   };
@@ -105,7 +113,7 @@ function Caixa() {
   const lancar = async () => {
     if (!caixa || !openMov || valor <= 0) return;
     const { error } = await supabase.from("caixa_movimentos").insert({
-      sessao_id: caixa.id, tipo: openMov, valor, descricao: desc, funcionario_id: user?.id ?? null,
+      sessao_id: caixa.id, tipo: openMov, valor, descricao: desc, funcionario_id: funcionarioId,
     });
     if (error) return toast.error(error.message);
     toast.success("Lançado"); setOpenMov(null); setValor(0); setDesc(""); load();
