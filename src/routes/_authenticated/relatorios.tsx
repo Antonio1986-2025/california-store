@@ -99,11 +99,11 @@ function RelVendas() {
       let q = supabase
         .from("vendas")
         .select(
-          "id,created_at,total,desconto,funcionario_id,clientes(nome),funcionarios(nome),pagamentos(forma,valor)",
+          "id,criado_em,total,desconto,funcionario_id,clientes(nome),funcionarios(nome),pagamentos(forma,valor)",
         )
-        .gte("created_at", ini)
-        .lte("created_at", end)
-        .order("created_at", { ascending: false });
+        .gte("criado_em", ini)
+        .lte("criado_em", end)
+        .order("criado_em", { ascending: false });
       if (funcId !== "todos") q = q.eq("funcionario_id", funcId);
       const { data } = await q;
       let res = data ?? [];
@@ -128,7 +128,7 @@ function RelVendas() {
   const chart = useMemo(() => {
     const map = new Map<string, number>();
     rows.forEach((r) => {
-      const d = new Date(r.created_at).toISOString().slice(0, 10);
+      const d = new Date(r.criado_em).toISOString().slice(0, 10);
       map.set(d, (map.get(d) ?? 0) + Number(r.total || 0));
     });
     return [...map.entries()]
@@ -139,7 +139,7 @@ function RelVendas() {
   function exportar() {
     const header = ["Data", "Nº Venda", "Cliente", "Total", "Pagamento", "Funcionário"];
     const body = rows.map((r) => [
-      fmtDate(r.created_at),
+      fmtDate(r.criado_em),
       String(r.id).slice(0, 8).toUpperCase(),
       r.clientes?.nome ?? "—",
       Number(r.total || 0).toFixed(2),
@@ -233,7 +233,7 @@ function RelVendas() {
                   <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-6">Nenhuma venda no período.</TableCell></TableRow>
                 ) : rows.map((r) => (
                   <TableRow key={r.id}>
-                    <TableCell>{fmtDate(r.created_at)}</TableCell>
+                    <TableCell>{fmtDate(r.criado_em)}</TableCell>
                     <TableCell className="font-mono text-xs">{String(r.id).slice(0, 8).toUpperCase()}</TableCell>
                     <TableCell>{r.clientes?.nome ?? "—"}</TableCell>
                     <TableCell>{(r.pagamentos ?? []).map((p: any) => p.forma).join(", ") || "—"}</TableCell>
@@ -494,8 +494,8 @@ function RelComissoes() {
         .from("vendas")
         .select("total,funcionario_id,funcionarios(nome,comissao_pct)")
         .not("funcionario_id", "is", null)
-        .gte("created_at", ini)
-        .lte("created_at", end);
+        .gte("criado_em", ini)
+        .lte("criado_em", end);
       const map = new Map<string, { nome: string; pct: number; qtd: number; total: number }>();
       (data ?? []).forEach((v: any) => {
         const id = v.funcionario_id;
