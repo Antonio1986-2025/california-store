@@ -45,19 +45,21 @@ function Caixa() {
   const [valor, setValor] = useState(0);
   const [desc, setDesc] = useState("");
   const [funcionarioId, setFuncionarioId] = useState<string | null>(null);
+  const [funcionarioNome, setFuncionarioNome] = useState<string>("");
 
   useEffect(() => {
     if (!user?.id) return;
     (async () => {
-      const { data } = await supabase.from("funcionarios").select("id")
+      const { data } = await supabase.from("funcionarios").select("id, nome")
         .eq("user_id", user.id).maybeSingle();
-      if (data?.id) { setFuncionarioId(data.id); return; }
+      if (data?.id) { setFuncionarioId(data.id); setFuncionarioNome(data.nome ?? ""); return; }
       const nome = user.email?.split("@")[0] ?? "Usuário";
       const { data: novo, error } = await supabase.from("funcionarios").insert({
         user_id: user.id, nome, perfil: "admin", ativo: true, comissao_pct: 0,
-      }).select("id").single();
+      }).select("id, nome").single();
       if (error) { toast.error("Não foi possível vincular funcionário: " + error.message); return; }
       setFuncionarioId(novo.id);
+      setFuncionarioNome(novo.nome ?? nome);
     })();
   }, [user?.id]);
 
@@ -143,7 +145,7 @@ function Caixa() {
               <Info l="Aberto em" v={new Date(caixa.abertura_em).toLocaleString("pt-BR")} />
               <Info l="Saldo inicial" v={brl(Number(caixa.saldo_inicial ?? 0))} />
               <Info l="Saldo final esperado" v={brl(saldoFinal)} />
-              <Info l="Funcionário" v={caixa.funcionario_id ?? "—"} />
+              <Info l="Funcionário" v={funcionarioNome || "—"} />
             </div>
           ) : <p className="text-muted-foreground text-sm">Caixa fechado.</p>}
         </CardContent>
