@@ -268,6 +268,8 @@ export const importarPlanilha = createServerFn({ method: "POST" })
       }
 
       // 2) produto
+      const codigoForn = g.variantes.find((v) => v.fornecedorCodigo)?.fornecedorCodigo || null;
+      const codigoInt = g.variantes[0]?.sku || null;
       const { data: np, error: pe } = await supabaseAdmin
         .from("produtos")
         .insert({
@@ -280,6 +282,8 @@ export const importarPlanilha = createServerFn({ method: "POST" })
           estoque_minimo: 0,
           foto_url: g.foto,
           ativo: true,
+          codigo_fornecedor: codigoForn,
+          codigo_interno: codigoInt,
         })
         .select("id")
         .single();
