@@ -68,6 +68,7 @@ export function ProdutoForm({ open, onOpenChange, produtoId, onSaved }: Props) {
           setPrecoVenda(Number(p.preco_venda ?? 0));
           setEstoqueMinimo(Number(p.estoque_minimo ?? 0));
           setFoto(p.foto_url ?? "");
+          setCodigoFornecedor(p.codigo_fornecedor ?? "");
         }
         const { data: vs } = await supabase
           .from("produto_variantes")
