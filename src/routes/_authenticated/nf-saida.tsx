@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FileText, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { brl } from "@/lib/pdv-types";
 
@@ -98,9 +99,22 @@ function Lista({ mes, emitidas }: { mes: string; emitidas: boolean }) {
   const [openEmitir, setOpenEmitir] = useState(false);
   const [nfNumero, setNfNumero] = useState("");
   const [salvando, setSalvando] = useState(false);
+  const [schemaError, setSchemaError] = useState<string | null>(null);
+  const lastToastRef = useRef<string | null>(null);
+
+  const showErrorOnce = (message: string) => {
+    if (lastToastRef.current === message) return;
+    lastToastRef.current = message;
+    toast.error(message);
+  };
+
+  const isMissingColumnError = (message: string) =>
+    /does not exist/i.test(message) &&
+    /(codigo_fornecedor|codigo_interno|nf_saida_emitida|nf_saida_numero|nf_saida_data)/i.test(message);
 
   const carregar = async () => {
     setLoading(true);
+    setSchemaError(null);
     const { start, end } = rangeMes(mes);
     // 1) Busca vendas do mês para evitar filtro em foreign-table (PostgREST alias)
     const { data: vendasMes, error: vendasErr } = await supabase
@@ -109,7 +123,7 @@ function Lista({ mes, emitidas }: { mes: string; emitidas: boolean }) {
       .gte("criado_em", start)
       .lt("criado_em", end);
     if (vendasErr) {
-      toast.error("Erro ao carregar: " + vendasErr.message);
+      showErrorOnce("Erro ao carregar: " + vendasErr.message);
       setItens([]);
       setSelecionados(new Set());
       setLoading(false);
@@ -137,9 +151,16 @@ function Lista({ mes, emitidas }: { mes: string; emitidas: boolean }) {
       .not("variante.produto.codigo_fornecedor", "is", null);
 
     if (error) {
-      toast.error("Erro ao carregar: " + error.message);
+      if (isMissingColumnError(error.message)) {
+        setSchemaError(
+          "Os campos de NF de saída ainda não existem no banco. Aplique a migration 20260526134900_nf_saida_retry.sql no Lovable Cloud e recarregue a página.",
+        );
+      } else {
+        showErrorOnce("Erro ao carregar: " + error.message);
+      }
       setItens([]);
     } else {
+      lastToastRef.current = null;
       // filtra defensivamente caso join traga produto sem codigo_fornecedor
       const filtered = (data as any[]).filter(
         (i) => i.variante?.produto?.codigo_fornecedor,
@@ -240,6 +261,13 @@ function Lista({ mes, emitidas }: { mes: string; emitidas: boolean }) {
         </div>
       </CardHeader>
       <CardContent>
+        {schemaError && (
+          <Alert className="mb-4 border-destructive/40 text-destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Migration pendente</AlertTitle>
+            <AlertDescription>{schemaError}</AlertDescription>
+          </Alert>
+        )}
         {loading ? (
           <p className="text-sm text-muted-foreground py-6 text-center">Carregando...</p>
         ) : itens.length === 0 ? (
