@@ -126,6 +126,7 @@ export function ProdutoForm({ open, onOpenChange, produtoId, onSaved }: Props) {
         estoque_minimo: estoqueMinimo,
         foto_url: foto || null,
         ativo: true,
+        codigo_fornecedor: codigoFornecedor.trim() || null,
       };
 
       let pid = produtoId ?? null;
