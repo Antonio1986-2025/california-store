@@ -27,7 +27,7 @@ type Item = {
   nf_saida_data: string | null;
   venda: {
     id: string;
-    created_at: string;
+    criado_em: string;
     cliente: { nome: string } | null;
   } | null;
   variante: {
@@ -106,8 +106,8 @@ function Lista({ mes, emitidas }: { mes: string; emitidas: boolean }) {
     const { data: vendasMes, error: vendasErr } = await supabase
       .from("vendas")
       .select("id")
-      .gte("created_at", start)
-      .lt("created_at", end);
+      .gte("criado_em", start)
+      .lt("criado_em", end);
     if (vendasErr) {
       toast.error("Erro ao carregar: " + vendasErr.message);
       setItens([]);
@@ -126,7 +126,7 @@ function Lista({ mes, emitidas }: { mes: string; emitidas: boolean }) {
       .from("venda_itens")
       .select(`
         id, quantidade, preco_unitario, nf_saida_emitida, nf_saida_numero, nf_saida_data,
-        venda:vendas!inner(id, created_at, cliente:clientes(nome)),
+        venda:vendas!inner(id, criado_em, cliente:clientes(nome)),
         variante:produto_variantes!inner(
           cor, tamanho, codigo_barras,
           produto:produtos!inner(nome, codigo_fornecedor, codigo_interno)
@@ -283,8 +283,8 @@ function Lista({ mes, emitidas }: { mes: string; emitidas: boolean }) {
                       </TableCell>
                     )}
                     <TableCell className="text-sm">
-                      {i.venda?.created_at
-                        ? new Date(i.venda.created_at).toLocaleDateString("pt-BR")
+                      {i.venda?.criado_em
+                        ? new Date(i.venda.criado_em).toLocaleDateString("pt-BR")
                         : "—"}
                     </TableCell>
                     <TableCell className="text-sm">
