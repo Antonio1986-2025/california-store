@@ -102,6 +102,26 @@ function Lista({ mes, emitidas }: { mes: string; emitidas: boolean }) {
   const carregar = async () => {
     setLoading(true);
     const { start, end } = rangeMes(mes);
+    // 1) Busca vendas do mês para evitar filtro em foreign-table (PostgREST alias)
+    const { data: vendasMes, error: vendasErr } = await supabase
+      .from("vendas")
+      .select("id")
+      .gte("created_at", start)
+      .lt("created_at", end);
+    if (vendasErr) {
+      toast.error("Erro ao carregar: " + vendasErr.message);
+      setItens([]);
+      setSelecionados(new Set());
+      setLoading(false);
+      return;
+    }
+    const vendaIds = (vendasMes ?? []).map((v: any) => v.id);
+    if (vendaIds.length === 0) {
+      setItens([]);
+      setSelecionados(new Set());
+      setLoading(false);
+      return;
+    }
     const { data, error } = await supabase
       .from("venda_itens")
       .select(`
@@ -113,10 +133,8 @@ function Lista({ mes, emitidas }: { mes: string; emitidas: boolean }) {
         )
       `)
       .eq("nf_saida_emitida", emitidas)
-      .gte("venda.created_at", start)
-      .lt("venda.created_at", end)
-      .not("variante.produto.codigo_fornecedor", "is", null)
-      .order("created_at", { foreignTable: "venda", ascending: false });
+      .in("venda_id", vendaIds)
+      .not("variante.produto.codigo_fornecedor", "is", null);
 
     if (error) {
       toast.error("Erro ao carregar: " + error.message);
